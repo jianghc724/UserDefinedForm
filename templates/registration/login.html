@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6 col-lg-offset-3">
+            <form method="post" action=".">
+                {% csrf_token %}
+                {{form.errors}}
+                <p>
+                    <label for="id_username">用户名：</label>
+                </p>
+                <p>
+                    <input id="id_username" maxlength="256" name="username" type="text">
+                </p>
+                <p>
+                    <label for="id_password">密码：</label>
+                </p>
+                <p>
+                    <input for="id_password" name="password" type="password">
+                </p>
+            
+            <p>
+                <div class="col-lg-4">
+                    <input class="btn btn-default" type="submit" value="登录">
+                </div>
+                <div class="col-lg-4">
+                    <button type="button" class="btn btn-default">
+                        <a href="{% url 'registration_register' %}">注册</a>
+                    </button>   
+                </div>
+                <div class="col-lg-4">
+                    <button type="button" class="btn btn-default">
+                        <a href="{% url 'index' %}">游客</a>
+                    </button>   
+                </div>
+            </p>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
