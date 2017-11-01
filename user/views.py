@@ -77,7 +77,26 @@ class CreateQuestion(APIView):
 
     def post(self):
         if self.request.user.is_authenticated() and self.request.user.is_superuser():
-            pass
+            self.check_input('question_type', 'question_info')
+            if not self.input['question_type'] == 3:
+                self.check_input('choices')
+            q = QuestionBase.objects.create(questionType=self.input['question_type'],
+                                            questionInfo=self.input['question_info'])
+            if not self.input['question_type'] == 3:
+                i = 0
+                for c in self.input['choices']:
+                    if i == 0:
+                        q.choiceOne = c
+                    elif i == 1:
+                        q.choiceTwo = c
+                    elif i == 2:
+                        q.choiceThree = c
+                    elif i == 3:
+                        q.choiceFour = c
+                    else:
+                        raise LogicError("Too many choices")
+                    i = i + 1
+            q.save()
         else:
             raise LogicError("You have no authority to access")
 
@@ -129,12 +148,30 @@ class QuestionBaseList(APIView):
 class CreateSection(APIView):
     def get(self):
         if self.request.user.is_authenticated() and self.request.user.is_superuser():
-            pass
+            questionBases = QuestionBase.objects.all()
+            result = {}
+            for questionBase in questionBases:
+                result.append({
+                    'id': questionBase.id,
+                    'creator': questionBase.creator.username,
+                    'create_time':questionBase.createTime,
+                })
+            return result
         else:
             raise LogicError("You have no authority to access")
 
     def post(self):
-        pass
+        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+            self.check_input('questions')
+            s = SectionBase.objects.create(creator=self.request.user, createTime=datetime.now())
+            i = 0
+            for q in self.input['questions']:
+                s.questionBases.add(QuestionBase.objects.get(id=q))
+                i = i + 1
+            s.sectionCount = i
+            s.save()
+        else:
+            raise LogicError("You have no authority to access")
 
 
 class CheckSectionBase(APIView):
@@ -186,12 +223,30 @@ class SectionBaseList(APIView):
 class CreateForm(APIView):
     def get(self):
         if self.request.user.is_authenticated() and self.request.user.is_superuser():
-            pass
+            sectionBases = SectionBase.objects.all()
+            result = {}
+            for sectionBase in sectionBases:
+                result.append({
+                    'id': sectionBase.id,
+                    'creator': sectionBase.creator.username,
+                    'create_time':sectionBase.createTime,
+                })
+            return result
         else:
             raise LogicError("You have no authority to access")
 
     def post(self):
-        pass
+        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+            self.check_input('sections')
+            f = FormBase.objects.create(creator=self.request.user, createTime=datetime.now())
+            i = 0
+            for s in self.input['sections']:
+                f.sectionBases.add(SectionBase.objects.get(id=s))
+                i = i + 1
+            f.sectionCount = i
+            f.save()
+        else:
+            raise LogicError("You have no authority to access")
 
 
 class CheckFormBase(APIView):
