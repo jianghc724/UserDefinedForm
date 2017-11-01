@@ -1,74 +1,13 @@
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
-from codex.baseerror import *
+from django.contrib.auth.models import User
 
 # Create your models here.
 
 
-class UserProfileManager(BaseUserManager):
-    def create_user(self, license, name, password='Test123,.'):
-        if not license:
-            raise LogicError('You need a license')
-
-        user = self.model(
-            license=license,
-            name=name,
-        )
-
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, license, name, password='Test123,.'):
-        if not license:
-            raise LogicError('You need a license')
-
-        user = self.model(
-            license=license,
-            name=name,
-            password=password,
-        )
-
-        user.is_admin = True
-        user.save(using=self._db)
-        return user
-
-
-class UserProfile(AbstractBaseUser):
-    name = models.CharField(max_length=20)
-    license = models.CharField(max_length=20, unique=True)
-
-    objects = UserProfileManager()  # 创建用户
-
-    USERNAME_FIELD = 'license'
-    REQUIRED_FIELDS = ['name']
-
-    def get_full_name(self):
-        # The user is identified by their email address
-        return self.license
-
-    def get_short_name(self):
-        # The user is identified by their email address
-        return self.license
-
-    def __str__(self):  # __unicode__ on Python 2
-        return self.license
-
-    def has_perm(self, perm, obj=None):
-        "Does the user have a specific permission?"
-        # Simplest possible answer: Yes, always
-        return True
-
-    def has_module_perms(self, app_label):
-        "Does the user have permissions to view the app `app_label`?"
-        # Simplest possible answer: Yes, always
-        return True
-
-    @property
-    def is_staff(self):
-        "Is the user a member of staff?"
-        # Simplest possible answer: All admins are staff
-        return self.is_admin
+class User(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    license = models.CharField(max_length=20)
+    isAdmin = models.BooleanField(default=False)
 
 
 class QuestionBase(models.Model):
@@ -82,25 +21,25 @@ class QuestionBase(models.Model):
 
 class SectionBase(models.Model):
     questionCount = models.IntegerField(default=0)
-    questionOne = models.ForeignKey(QuestionBase, related_name='question_one')
-    questionTwo = models.ForeignKey(QuestionBase, related_name='question_two')
-    questionThree = models.ForeignKey(QuestionBase, related_name='question_three')
-    questionFour = models.ForeignKey(QuestionBase, related_name='question_four')
-    questionFive = models.ForeignKey(QuestionBase, related_name='question_five')
-    questionSix = models.ForeignKey(QuestionBase, related_name='question_six')
-    questionSeven = models.ForeignKey(QuestionBase, related_name='question_seven')
-    questionEight = models.ForeignKey(QuestionBase, related_name='question_eight')
-    questionNine = models.ForeignKey(QuestionBase, related_name='question_nine')
-    questionTen = models.ForeignKey(QuestionBase, related_name='question_ten')
+    questionOne = models.ForeignKey(QuestionBase)
+    questionTwo = models.ForeignKey(QuestionBase)
+    questionThree = models.ForeignKey(QuestionBase)
+    questionFour = models.ForeignKey(QuestionBase)
+    questionFive = models.ForeignKey(QuestionBase)
+    questionSix = models.ForeignKey(QuestionBase)
+    questionSeven = models.ForeignKey(QuestionBase)
+    questionEight = models.ForeignKey(QuestionBase)
+    questionNine = models.ForeignKey(QuestionBase)
+    questionTen = models.ForeignKey(QuestionBase)
 
 
 class FormBase(models.Model):
     sectionCount = models.IntegerField(default=0)
-    sectionOne = models.ForeignKey(SectionBase, related_name='section_one')
-    sectionTwo = models.ForeignKey(SectionBase, related_name='section_two')
-    sectionThree = models.ForeignKey(SectionBase, related_name='section_three')
-    sectionFour = models.ForeignKey(SectionBase, related_name='section_four')
-    sectionFive = models.ForeignKey(SectionBase, related_name='section_five')
+    sectionOne = models.ForeignKey(SectionBase)
+    sectionTwo = models.ForeignKey(SectionBase)
+    sectionThree = models.ForeignKey(SectionBase)
+    sectionFour = models.ForeignKey(SectionBase)
+    sectionFive = models.ForeignKey(SectionBase)
 
 
 class Question(models.Model):
@@ -115,33 +54,27 @@ class Question(models.Model):
 
 class Section(models.Model):
     questionCount = models.IntegerField(default=0)
-    questionOne = models.ForeignKey(Question, related_name='question_one')
-    questionTwo = models.ForeignKey(Question, related_name='question_two')
-    questionThree = models.ForeignKey(Question, related_name='question_three')
-    questionFour = models.ForeignKey(Question, related_name='question_four')
-    questionFive = models.ForeignKey(Question, related_name='question_five')
-    questionSix = models.ForeignKey(Question, related_name='question_six')
-    questionSeven = models.ForeignKey(Question, related_name='question_seven')
-    questionEight = models.ForeignKey(Question, related_name='question_eight')
-    questionNine = models.ForeignKey(Question, related_name='question_nine')
-    questionTen = models.ForeignKey(Question, related_name='question_ten')
+    questionOne = models.ForeignKey(Question)
+    questionTwo = models.ForeignKey(Question)
+    questionThree = models.ForeignKey(Question)
+    questionFour = models.ForeignKey(Question)
+    questionFive = models.ForeignKey(Question)
+    questionSix = models.ForeignKey(Question)
+    questionSeven = models.ForeignKey(Question)
+    questionEight = models.ForeignKey(Question)
+    questionNine = models.ForeignKey(Question)
+    questionTen = models.ForeignKey(Question)
     sectionFinished = models.BooleanField(default=False)
 
 
 class Form(models.Model):
     sectionCount = models.IntegerField(default=0)
-    sectionOne = models.ForeignKey(Section, related_name='section_one')
-    sectionTwo = models.ForeignKey(Section, related_name='section_two')
-    sectionThree = models.ForeignKey(Section, related_name='section_three')
-    sectionFour = models.ForeignKey(Section, related_name='section_four')
-    sectionFive = models.ForeignKey(Section, related_name='section_five')
+    sectionOne = models.ForeignKey(Section)
+    sectionTwo = models.ForeignKey(Section)
+    sectionThree = models.ForeignKey(Section)
+    sectionFour = models.ForeignKey(Section)
+    sectionFive = models.ForeignKey(Section)
     formNumber = models.IntegerField()
     formFinished = models.BooleanField(default=False)
-    trainee = models.ForeignKey(UserProfile, related_name='trainee')
-    rater = models.ForeignKey(UserProfile, related_name='rater')
-
-
-class Apply(models.Model):
-    form = models.ForeignKey(Form)
-    trainee = models.ForeignKey(UserProfile)
-    time = models.DateTimeField()
+    trainee = models.ForeignKey(User)
+    rater = models.ForeignKey(User)

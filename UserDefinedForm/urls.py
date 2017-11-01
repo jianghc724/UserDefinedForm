@@ -13,14 +13,9 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf import settings
-from django.conf.urls import url, include
+from django.conf.urls import url
 from django.contrib import admin
-from django.conf.urls.static import static
-from UserDefinedForm.views import StaticFileView
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^api/u/', include('user.urls')),
-    url(r'^', StaticFileView.as_view()),
 ]
