@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="/css/base.css" rel="stylesheet" type="text/css" />
+    <link href="/css/register.css" rel="stylesheet" type="text/css" />
+    <title>注册账号</title>
+</head>
+<body>
+<div id="wrap">
+    <header></header>
+
+    <div class="theme" id="theme"></div>
+
+    <hr/>
+    <div id="mainbody"></div>
+
+</div>
+
+<script type="text/template" id="tpl-header">
+    表单管理系统
+</script>
+
+<script type="text/template" id="tpl-theme">
+    注册账号
+</script>
+
+<script type="text/template" id="tpl-mainbody">
+    {% if isLoading %}
+    <div id="successHolder">
+        <img src="/img/loading.gif" />
+    </div>
+    {% elif isValidated %}
+    <div id="successHolder">
+        <img src="/img/success.png" />
+        <p>注册成功！</p>
+    </div>
+    {% else %}
+    <div id="validationHolder">
+        <form class="form-horizontal" role="form" method="post" id="validationForm" onsubmit="return false;">
+          <div class="form-group" id="usernameGroup">
+            <label for="inputUsername" class="col-xs-3 control-label">用户名</label>
+            <div class="col-xs-9">
+              <input type="tel" class="form-control" id="inputUsername" placeholder="请输入您的用户名" name="user_id" onblur="checkUsername();">
+              <span class="help-block" id="helpUsername"></span>
+            </div>
+          </div>
+          <div class="form-group" id="licenseGroup">
+            <label for="inputPassword" class="col-xs-3 control-label">执照</label>
+            <div class="col-xs-9">
+              <input type="tel" class="form-control" id="inputLicense" placeholder="请输入您的执照编号" name="license" onblur="checkLicense();">
+              <span class="help-block" id="helpLicense"></span>
+            </div>
+          </div>
+          <div class="form-group" id="passwordOneGroup">
+            <label for="inputPassword" class="col-xs-3 control-label">密码</label>
+            <div class="col-xs-9">
+              <input type="password" class="form-control" id="inputPasswordOne" placeholder="请输入您的密码" name="password_one" onblur="checkPasswordOne();">
+              <span class="help-block" id="helpPasswordOne"></span>
+            </div>
+          </div>
+          <div class="form-group" id="passwordTwoGroup">
+            <label for="inputPassword" class="col-xs-3 control-label">密码确认</label>
+            <div class="col-xs-9">
+              <input type="password" class="form-control" id="inputPassword" placeholder="请再输入密码进行确认" name="password_two" onblur="checkPasswordTwo();">
+              <span class="help-block" id="helpPasswordTwo"></span>
+            </div>
+          </div>
+          <div class="form-group" id="submitGroup">
+            <div class="col-xs-offset-3 col-xs-9">
+              <button onclick="submitRegister();" class="btn btn-default" id="submitBtn">注册</button>
+              <p class="help-block" id="helpLoading" style="display: none"><img src="/img/loading.gif">正在注册，请稍候...</p>
+              <p class="help-block" id="helpSubmit"></p>
+            </div>
+          </div>
+        </form>
+    </div>
+    {% endif %}
+</script>
+
+<script src="/3rd/jquery.js"></script>
+<script src="/3rd/swig.js"></script>
+<script src="/js/weixin_lib.js"></script>
+<script src="/js/base.js"></script>
+<script src="/js/validation.js"></script>
+
+<script>
+    var locals = {
+        isLoading: true,
+        isValidated: false,
+        isBinding: false
+    };
+    var render = function () {
+        $('header').html(swig.render($('#tpl-header').html(), {locals: locals}));
+        $('#theme').html(swig.render($('#tpl-theme').html(), {locals: locals}));
+        $('#mainbody').html(swig.render($('#tpl-mainbody').html(), {locals: locals}));
+    };
+    $(function () {
+        render();
+        api.get('/api/u/user/register', function (data) {
+            locals.isLoading = false;
+            locals.isValidated = !!data;
+            render();
+        }, dftFail);
+    });
+    var submitRegister = function () {
+        //locals.isBinding = true;
+        //render();
+        submitValidation(function (data) {
+            locals.isBinding = false;
+            locals.isValidated = true;
+            render();
+        }, function (errno, errmsg) {
+            //locals.isBinding = false;
+            //locals.isValidated = false;
+            //render();
+            if (errno == 2) {
+                showError('usernameGroup', 'helpUsername', '用户名已被使用');
+                showError('licenseGroup', 'helpLicense', '');
+                showError('passwordOneGroup', 'helpPasswordOne', '');
+                showError('passwordTwoGroup', 'helpPasswordTwo', '');
+                showError('submitGroup', 'helpSubmit', errmsg);
+            } else {
+                showError('submitGroup', 'helpSubmit', '出现了奇怪的错误，我们已经记录下来了，请稍后重试。');
+            }
+            disableAll(false);
+            showLoading(false);
+        });
+    };
+</script>
+</body>
+</html>
