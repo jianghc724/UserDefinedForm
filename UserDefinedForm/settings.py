@@ -11,21 +11,24 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import json
+import logging
+import urllib.parse
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+CONFIGS = json.loads(open(os.path.join(BASE_DIR, 'configs.json')).read())
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '-&5i@+4!(62bx9%@x&!0l)dm2hdn$(u!9kfw)=807*$hyk0g5i'
+SECRET_KEY = CONFIGS['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = CONFIGS['DEBUG']
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -78,11 +81,11 @@ WSGI_APPLICATION = 'UserDefinedForm.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django',
-        'USER': 'root',
-        'PASSWORD': 'temp',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        'NAME': CONFIGS['DB_NAME'],
+        'USER': CONFIGS['DB_USER'],
+        'PASSWORD': CONFIGS['DB_PASS'],
+        'HOST': CONFIGS['DB_HOST'],
+        'PORT': CONFIGS['DB_PORT'],
     }
 }
 
@@ -125,11 +128,22 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-ACCOUNT_ACTIVATION_DAYS = 7
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mails.tsinghua.edu.cn'
-EMAIL_PORT = 25
-DEFAULT_FROM_EMAIL = 'jianghc14@mails.tsinghua.edu.cn'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-EMAIL_HOST_USER = 'jianghc14@mails.tsinghua.edu.cn'
-EMAIL_HOST_PASSWORD = 'temp_password'
+# Site and URL
+SITE_DOMAIN = CONFIGS['SITE_DOMAIN'].rstrip('/')
+
+
+def get_url(path, params=None):
+    full_path = urllib.parse.urljoin(SITE_DOMAIN, path)
+    if params:
+        return full_path + ('&' if urllib.parse.urlparse(full_path).query else '?') + urllib.parse.urlencode(params)
+    else:
+        return full_path
+
+
+# Logging configurations
+logging.basicConfig(
+    format='%(levelname)-7s [%(asctime)s] %(module)s.%(funcName)s:%(lineno)d  %(message)s',
+    level=logging.DEBUG if DEBUG else logging.WARNING,
+)
