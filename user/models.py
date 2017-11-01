@@ -80,33 +80,27 @@ class UserInfo(models.Model):
 class QuestionBase(models.Model):
     questionInfo = models.TextField()
     questionType = models.IntegerField() # 1 for single choice 2 for multiple choice 3 for filling 4 for rating
+    choiceCount = models.IntegerField(default=0)
     choiceOne = models.CharField(max_length=50)
     choiceTwo = models.CharField(max_length=50)
     choiceThree = models.CharField(max_length=50)
     choiceFour = models.CharField(max_length=50)
+    creator = models.ForeignKey(User)
+    createTime = models.DateTimeField()
 
 
 class SectionBase(models.Model):
     questionCount = models.IntegerField(default=0)
-    questionOne = models.ForeignKey(QuestionBase, related_name='question_one')
-    questionTwo = models.ForeignKey(QuestionBase, related_name='question_two')
-    questionThree = models.ForeignKey(QuestionBase, related_name='question_three')
-    questionFour = models.ForeignKey(QuestionBase, related_name='question_four')
-    questionFive = models.ForeignKey(QuestionBase, related_name='question_five')
-    questionSix = models.ForeignKey(QuestionBase, related_name='question_six')
-    questionSeven = models.ForeignKey(QuestionBase, related_name='question_seven')
-    questionEight = models.ForeignKey(QuestionBase, related_name='question_eight')
-    questionNine = models.ForeignKey(QuestionBase, related_name='question_nine')
-    questionTen = models.ForeignKey(QuestionBase, related_name='question_ten')
+    questionBases = models.ManyToManyField(QuestionBase)
+    creator = models.ForeignKey(User)
+    createTime = models.DateTimeField()
 
 
 class FormBase(models.Model):
     sectionCount = models.IntegerField(default=0)
-    sectionOne = models.ForeignKey(SectionBase, related_name='section_one')
-    sectionTwo = models.ForeignKey(SectionBase, related_name='section_two')
-    sectionThree = models.ForeignKey(SectionBase, related_name='section_three')
-    sectionFour = models.ForeignKey(SectionBase, related_name='section_four')
-    sectionFive = models.ForeignKey(SectionBase, related_name='section_five')
+    sectionBases = models.ManyToManyField(SectionBase)
+    creator = models.ForeignKey(User)
+    createTime = models.DateTimeField()
 
 
 class Question(models.Model):
@@ -121,33 +115,21 @@ class Question(models.Model):
 
 class Section(models.Model):
     questionCount = models.IntegerField(default=0)
-    questionOne = models.ForeignKey(Question, related_name='question_one')
-    questionTwo = models.ForeignKey(Question, related_name='question_two')
-    questionThree = models.ForeignKey(Question, related_name='question_three')
-    questionFour = models.ForeignKey(Question, related_name='question_four')
-    questionFive = models.ForeignKey(Question, related_name='question_five')
-    questionSix = models.ForeignKey(Question, related_name='question_six')
-    questionSeven = models.ForeignKey(Question, related_name='question_seven')
-    questionEight = models.ForeignKey(Question, related_name='question_eight')
-    questionNine = models.ForeignKey(Question, related_name='question_nine')
-    questionTen = models.ForeignKey(Question, related_name='question_ten')
+    questions = models.ManyToManyField(Question)
     sectionFinished = models.BooleanField(default=False)
 
 
 class Form(models.Model):
     sectionCount = models.IntegerField(default=0)
-    sectionOne = models.ForeignKey(Section, related_name='section_one')
-    sectionTwo = models.ForeignKey(Section, related_name='section_two')
-    sectionThree = models.ForeignKey(Section, related_name='section_three')
-    sectionFour = models.ForeignKey(Section, related_name='section_four')
-    sectionFive = models.ForeignKey(Section, related_name='section_five')
-    formNumber = models.IntegerField()
+    sections = models.ManyToManyField(Section)
     formFinished = models.BooleanField(default=False)
     trainee = models.ForeignKey(User, related_name='trainee')
     rater = models.ForeignKey(User, related_name='rater')
 
 
 class Apply(models.Model):
-    form = models.ForeignKey(Form)
+    form_id = models.IntegerField()
     trainee = models.ForeignKey(User)
-    time = models.DateTimeField()
+    applyTime = models.DateTimeField()
+    isHandled = models.BooleanField(default=False)
+    finishTime = models.DateTimeField()
