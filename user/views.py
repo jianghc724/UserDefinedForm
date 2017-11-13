@@ -40,30 +40,31 @@ class UserLogout(APIView):
             raise LogicError("You haven't log in")
 
 
-class ApplyList(APIView):
+class FormList(APIView):
     def get(self):
         if self.request.user.is_authenticated():
             user = self.request.user
             if user.is_superuser:
-                applies = Apply.objects.all()
+                forms = Form.objects.all()
                 result = {}
-                for apply in applies:
+                for form in forms:
                     result.append({
-                        'status': apply.isHandled,
-                        'id': apply.id,
-                        'time':apply.applyTime,
+                        'status': form.formFinished,
+                        'id': form.id,
+                        'time': form.finishTime,
+                        'rater': form.rater.username
                     })
                 return result
             else:
-                applies = Apply.objects.filter(trainee=user)
+                forms = Form.objects.filter(rater=user)
                 result = {}
-                for apply in applies:
+                for form in forms:
                     result.append({
-                        'status': apply.isHandled,
-                        'id': apply.id,
-                        'time':apply.applyTime,
+                        'status': form.formFinished,
+                        'id': form.id,
+                        'time': form.finishTime,
+                        'rater': form.rater.username
                     })
-                return result
         else:
             raise LogicError("You haven't log in")
 
@@ -76,7 +77,7 @@ class CreateQuestion(APIView):
         pass
 
     def post(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             self.check_input('question_type', 'question_info')
             if not self.input['question_type'] == 3:
                 self.check_input('choices')
@@ -103,7 +104,7 @@ class CreateQuestion(APIView):
 
 class CheckQuestionBase(APIView):
     def get(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             self.check_input('id')
             question = QuestionBase.objects.get(id=self.input['id'])
             if question:
@@ -128,7 +129,7 @@ class CheckQuestionBase(APIView):
 
 class QuestionBaseList(APIView):
     def get(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             questionBases = QuestionBase.objects.all()
             result = {}
             for questionBase in questionBases:
@@ -147,7 +148,7 @@ class QuestionBaseList(APIView):
 
 class CreateSection(APIView):
     def get(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             questionBases = QuestionBase.objects.all()
             result = {}
             for questionBase in questionBases:
@@ -161,7 +162,7 @@ class CreateSection(APIView):
             raise LogicError("You have no authority to access")
 
     def post(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             self.check_input('questions')
             s = SectionBase.objects.create(creator=self.request.user, createTime=datetime.now())
             i = 0
@@ -176,7 +177,7 @@ class CreateSection(APIView):
 
 class CheckSectionBase(APIView):
     def get(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             self.check_input('id')
             section = SectionBase.objects.get(id=self.input['id'])
             if section:
@@ -203,7 +204,7 @@ class CheckSectionBase(APIView):
 
 class SectionBaseList(APIView):
     def get(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             sectionBases = SectionBase.objects.all()
             result = {}
             for sectionBase in sectionBases:
@@ -222,7 +223,7 @@ class SectionBaseList(APIView):
 
 class CreateForm(APIView):
     def get(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             sectionBases = SectionBase.objects.all()
             result = {}
             for sectionBase in sectionBases:
@@ -236,7 +237,7 @@ class CreateForm(APIView):
             raise LogicError("You have no authority to access")
 
     def post(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             self.check_input('sections')
             f = FormBase.objects.create(creator=self.request.user, createTime=datetime.now())
             i = 0
@@ -251,7 +252,7 @@ class CreateForm(APIView):
 
 class CheckFormBase(APIView):
     def get(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             self.check_input('id')
             form = FormBase.objects.get(id=self.input['id'])
             if form:
@@ -279,7 +280,7 @@ class CheckFormBase(APIView):
 
 class FormBaseList(APIView):
     def get(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             formBases = FormBase.objects.all()
             result = {}
             for formBase in formBases:
@@ -298,14 +299,14 @@ class FormBaseList(APIView):
 
 class HandleApply(APIView):
     def get(self):
-        if self.request.user.is_authenticated() and self.request.user.is_superuser():
+        if self.request.user.is_authenticated():
             formBases = FormBase.objects.all()
             result = {}
             for formBase in formBases:
                 result.append({
                     'id': formBase.id,
                     'creator': formBase.creator.username,
-                    'create_time':formBase.createTime,
+                    'create_time': formBase.createTime,
                 })
             return result
         else:

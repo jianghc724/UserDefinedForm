@@ -74,7 +74,7 @@ class UserProfile(AbstractBaseUser):
 
 class UserInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    license = models.CharField(max_length=20)
+    name = models.CharField(max_length=20)
 
 
 class QuestionBase(models.Model):
@@ -85,22 +85,22 @@ class QuestionBase(models.Model):
     choiceTwo = models.CharField(max_length=50)
     choiceThree = models.CharField(max_length=50)
     choiceFour = models.CharField(max_length=50)
-    creator = models.ForeignKey(User)
-    createTime = models.DateTimeField()
+    creator = models.ForeignKey(User, null=True)
+    createTime = models.DateTimeField(null=True)
 
 
 class SectionBase(models.Model):
     questionCount = models.IntegerField(default=0)
     questionBases = models.ManyToManyField(QuestionBase)
-    creator = models.ForeignKey(User)
-    createTime = models.DateTimeField()
+    creator = models.ForeignKey(User, null=True)
+    createTime = models.DateTimeField(null=True)
 
 
 class FormBase(models.Model):
     sectionCount = models.IntegerField(default=0)
     sectionBases = models.ManyToManyField(SectionBase)
-    creator = models.ForeignKey(User)
-    createTime = models.DateTimeField()
+    creator = models.ForeignKey(User, null=True)
+    createTime = models.DateTimeField(null=True)
 
 
 class Question(models.Model):
@@ -122,14 +122,16 @@ class Section(models.Model):
 class Form(models.Model):
     sectionCount = models.IntegerField(default=0)
     sections = models.ManyToManyField(Section)
-    formFinished = models.BooleanField(default=False)
-    trainee = models.ForeignKey(User, related_name='trainee')
-    rater = models.ForeignKey(User, related_name='rater')
+    formFinished = models.IntegerField(default=False)
+    rater = models.ForeignKey(User, null=True)
+    finishTime = models.DateTimeField(null=True)
 
-
+'''
 class Apply(models.Model):
     form_id = models.IntegerField()
     trainee = models.ForeignKey(User)
     applyTime = models.DateTimeField()
     isHandled = models.BooleanField(default=False)
     finishTime = models.DateTimeField()
+    type = models.TextField()
+'''

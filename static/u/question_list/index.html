@@ -9,9 +9,9 @@
         }
     </style>
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="/css/apply_list.css" />
+    <link rel="stylesheet" href="/css/question_list.css" />
 
-    <title>表单列表</title>
+    <title>问题列表</title>
 </head>
 <body>
     <header class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -47,7 +47,7 @@
     <li class="active"><a class="btn-link" href="/u/apply_list">表单列表</a></li>
     <li class="active"><a class="btn-link" href="/u/question_list">问题模板</a></li>
     <li class="active"><a class="btn-link" href="/u/section_list">部分模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/question_list">表单模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">表单模板</a></li>
 </script>
 
 <script type="text/template" id="tpl-nav-li-right">
@@ -57,41 +57,43 @@
 <script type="text/template" id="tpl-content">
     <div class="container" xmlns="http://www.w3.org/1999/html">
         <div class="pageheader">
-            <h1 class="lead">表单列表</h1>
+            <h1 class="lead">问题列表</h1>
         </div>
 
         <div class="panel panel-default">
             <div class="panel-heading">
-                <a class="btn btn-default" href="/u/apply_detail?create=1">填写表单</a>
+                <a class="btn btn-default" href="/u/question_detail?create=1">新建问题</a>
             </div>
 
             <table class="table table-hover">
                 <thead>
                 <tr>
                     <th>编号</th>
-                    <th>状态</th>
-                    <th>申请时间</th>
+                    <th>模板名</th>
+                    <th>创建人</th>
+                    <th>创建时间</th>
                     <th>操作</th>
                 </tr>
                 </thead>
                 <tbody id="tbody-applies">
-                {% for apply in applies %}
-                <tr id="act-{{ apply.id }}">
+                {% for question in questions %}
+                <tr id="act-{{ question.id }}">
+                    <td class="td-id">
+                        {{ question.id }}
+                    </td>
                     <td class="td-name">
-                        {{ apply.id }}
+                        {{ question.name }}
                     </td>
-                    <td class="td-status">
-                        {{ apply.status }}
+                    <td class="td-creator">
+                        {{ question.creator }}
                     </td>
-                    <td class="td-apply_time">
-                        {{ apply.time }}
+                    <td class="td-time">
+                        {{ question.time }}
                     </td>
                     <td class="td-operations">
-                    {% if apply.status == 0 %}
-                        <a href="/u/check_apply?id={{ apply.id }}" target="_blank">
-                            <span class="glyphicon glyphicon-check">查看表单</span>
+                        <a href="/u/question_detail?id={{ question.id }}" target="_blank">
+                            <span class="glyphicon glyphicon-check">查看模板</span>
                         </a>
-                    {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -110,7 +112,7 @@
 <script src="/3rd/swig.js"></script>
 <script src="/js/base.js"></script>
 <script src="/js/base_admin.js"></script>
-<script src="/js/apply_list.js"></script>
+<script src="/js/question_list.js"></script>
 
 <script>
     var locals = {
@@ -130,9 +132,9 @@
         swig.setDefaultTZOffset(new Date().getTimezoneOffset());
         render();
         loginRequired(function () {
-            api.get('/api/u/apply/list', {}, function (data) {
-                $.each(data, function (i, apply) {
-                    updateDate(apply, 'time');
+            api.get('/api/u/question/list', {}, function (data) {
+                $.each(data, function (i, question) {
+                    updateDate(question, 'time');
                 });
                 locals.applies = data;
                 render();
