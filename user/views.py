@@ -46,24 +46,24 @@ class FormList(APIView):
             user = self.request.user
             if user.is_superuser:
                 forms = Form.objects.all()
-                result = {}
+                result = []
                 for form in forms:
                     result.append({
                         'status': form.formFinished,
                         'id': form.id,
                         'time': form.finishTime,
-                        'rater': form.rater.username
+                        'rater': form.rater.user.username
                     })
                 return result
             else:
                 forms = Form.objects.filter(rater=user)
-                result = {}
+                result = []
                 for form in forms:
                     result.append({
                         'status': form.formFinished,
                         'id': form.id,
                         'time': form.finishTime,
-                        'rater': form.rater.username
+                        'rater': form.rater.user.username
                     })
         else:
             raise LogicError("You haven't log in")
@@ -78,25 +78,17 @@ class CreateQuestion(APIView):
 
     def post(self):
         if self.request.user.is_authenticated():
-            self.check_input('question_type', 'question_info')
-            if not self.input['question_type'] == 3:
-                self.check_input('choices')
-            q = QuestionBase.objects.create(questionType=self.input['question_type'],
-                                            questionInfo=self.input['question_info'])
-            if not self.input['question_type'] == 3:
-                i = 0
-                for c in self.input['choices']:
-                    if i == 0:
-                        q.choiceOne = c
-                    elif i == 1:
-                        q.choiceTwo = c
-                    elif i == 2:
-                        q.choiceThree = c
-                    elif i == 3:
-                        q.choiceFour = c
-                    else:
-                        raise LogicError("Too many choices")
-                    i = i + 1
+            self.check_input('type', 'info', 'name')
+            if self.input['type'] == 'single' or self.input['type'] == 'multiple':
+                self.check_input('choiceOne', 'choiceTwo', 'choiceThree', 'choiceFour')
+            if self.input['type'] == 'single':
+                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=1, questionInfo=self.input['info'], createTime = datetime.now(), creator = self.request.user, choiceOne = self.input['choiceOne'], choiceTwo = self.input['choiceTwo'], choiceThree = self.input['choiceThree'], choiceFour = self.input['choiceFour'])
+            elif self.input['type'] == 'multiple':
+                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=2, questionInfo=self.input['info'], createTime = datetime.now(), creator = self.request.user, choiceOne = self.input['choiceOne'], choiceTwo = self.input['choiceTwo'], choiceThree = self.input['choiceThree'], choiceFour = self.input['choiceFour'])
+            elif self.input['type'] == 'textfilling':
+                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=3, questionInfo=self.input['info'], createTime = datetime.now(), creator = self.request.user)
+            else:
+                raise InputError("No such type")
             q.save()
         else:
             raise LogicError("You have no authority to access")
@@ -109,13 +101,13 @@ class CheckQuestionBase(APIView):
             question = QuestionBase.objects.get(id=self.input['id'])
             if question:
                 result = {
-                    'question_type': question.question.questionType,
-                    'question_info': question.question.questionInfo,
-                    'choice_number': question.question.choiceCount,
-                    'choice_one': question.question.choiceOne,
-                    'choice_two': question.question.choiceTwo,
-                    'choice_three': question.question.choiceThree,
-                    'choice_four': question.question.choiceFour,
+                    'question_type': question.questionType,
+                    'question_info': question.questionInfo,
+                    'choice_number': question.choiceCount,
+                    'choice_one': question.choiceOne,
+                    'choice_two': question.choiceTwo,
+                    'choice_three': question.choiceThree,
+                    'choice_four': question.choiceFour,
                 }
                 return result
             else:
@@ -131,12 +123,15 @@ class QuestionBaseList(APIView):
     def get(self):
         if self.request.user.is_authenticated():
             questionBases = QuestionBase.objects.all()
-            result = {}
+            result = []
             for questionBase in questionBases:
+                # bug to fix: creator
+                print (questionBase.createTime)
                 result.append({
                     'id': questionBase.id,
-                    'creator': questionBase.creator.username,
-                    'create_time':questionBase.createTime,
+                    'name':questionBase.questionName,
+                    'creator': questionBase.creator_id,
+                    'time':questionBase.createTime.timestamp(),
                 })
             return result
         else:
@@ -150,11 +145,11 @@ class CreateSection(APIView):
     def get(self):
         if self.request.user.is_authenticated():
             questionBases = QuestionBase.objects.all()
-            result = {}
+            result = []
             for questionBase in questionBases:
                 result.append({
                     'id': questionBase.id,
-                    'creator': questionBase.creator.username,
+                    'creator': questionBase.creator.user.username,
                     'create_time':questionBase.createTime,
                 })
             return result
@@ -181,16 +176,16 @@ class CheckSectionBase(APIView):
             self.check_input('id')
             section = SectionBase.objects.get(id=self.input['id'])
             if section:
-                result = {}
+                result = []
                 for question in section.questions:
                     result.append({
-                        'question_type': question.question.questionType,
-                        'question_info': question.question.questionInfo,
-                        'choice_number': question.question.choiceCount,
-                        'choice_one': question.question.choiceOne,
-                        'choice_two': question.question.choiceTwo,
-                        'choice_three': question.question.choiceThree,
-                        'choice_four': question.question.choiceFour,
+                        'question_type': question.questionType,
+                        'question_info': question.questionInfo,
+                        'choice_number': question.choiceCount,
+                        'choice_one': question.choiceOne,
+                        'choice_two': question.choiceTwo,
+                        'choice_three': question.choiceThree,
+                        'choice_four': question.choiceFour,
                     })
                 return result
             else:
@@ -206,12 +201,12 @@ class SectionBaseList(APIView):
     def get(self):
         if self.request.user.is_authenticated():
             sectionBases = SectionBase.objects.all()
-            result = {}
+            result = []
             for sectionBase in sectionBases:
                 result.append({
                     'id': sectionBase.id,
-                    'creator': sectionBase.creator.username,
-                    'create_time':sectionBase.createTime,
+                    'creator': sectionBase.creator.user.username,
+                    'time':sectionBase.createTime,
                 })
             return result
         else:
@@ -225,12 +220,12 @@ class CreateForm(APIView):
     def get(self):
         if self.request.user.is_authenticated():
             sectionBases = SectionBase.objects.all()
-            result = {}
+            result = []
             for sectionBase in sectionBases:
                 result.append({
                     'id': sectionBase.id,
-                    'creator': sectionBase.creator.username,
-                    'create_time':sectionBase.createTime,
+                    'creator': sectionBase.creator.user.username,
+                    'time':sectionBase.createTime,
                 })
             return result
         else:
@@ -256,17 +251,17 @@ class CheckFormBase(APIView):
             self.check_input('id')
             form = FormBase.objects.get(id=self.input['id'])
             if form:
-                result = {}
+                result = []
                 for section in form.sections:
                     for question in section.questions:
                         result.append({
-                            'question_type': question.question.questionType,
-                            'question_info': question.question.questionInfo,
-                            'choice_number': question.question.choiceCount,
-                            'choice_one': question.question.choiceOne,
-                            'choice_two': question.question.choiceTwo,
-                            'choice_three': question.question.choiceThree,
-                            'choice_four': question.question.choiceFour,
+                            'question_type': question.questionType,
+                            'question_info': question.questionInfo,
+                            'choice_number': question.choiceCount,
+                            'choice_one': question.choiceOne,
+                            'choice_two': question.choiceTwo,
+                            'choice_three': question.choiceThree,
+                            'choice_four': question.choiceFour,
                         })
                 return result
             else:
@@ -282,11 +277,11 @@ class FormBaseList(APIView):
     def get(self):
         if self.request.user.is_authenticated():
             formBases = FormBase.objects.all()
-            result = {}
+            result = []
             for formBase in formBases:
                 result.append({
                     'id': formBase.id,
-                    'creator': formBase.creator.username,
+                    'creator': formBase.creator.user.username,
                     'create_time':formBase.createTime,
                 })
             return result
@@ -301,11 +296,11 @@ class HandleApply(APIView):
     def get(self):
         if self.request.user.is_authenticated():
             formBases = FormBase.objects.all()
-            result = {}
+            result = []
             for formBase in formBases:
                 result.append({
                     'id': formBase.id,
-                    'creator': formBase.creator.username,
+                    'creator': formBase.creator.user.username,
                     'create_time': formBase.createTime,
                 })
             return result
@@ -322,7 +317,7 @@ class CheckForm(APIView):
             self.check_input('id')
             form = Form.objects.get(id=self.input['id'])
             if form:
-                result = {}
+                result = []
                 for section in form.sections:
                     for question in section.questions:
                         result.append({
@@ -347,3 +342,41 @@ class CheckForm(APIView):
 
     def post(self):
         pass
+
+
+class FinishForm(APIView):
+    def get(self):
+        if self.request.user.is_authenticated():
+            self.check_input('id')
+            fBase = FormBase.objects.get(id=self.input['id'])
+            result = []
+            for sBase in fBase.sectionBases:
+                _result = []
+                for qBase in sBase.questionBases:
+                    choice = []
+                    for i in range(0,qBase.choiceCount):
+                        if i == 0:
+                            choice.append(qBase.choiceOne)
+                        elif i == 1:
+                            choice.append(qBase.choiceTwo)
+                        elif i == 2:
+                            choice.append(qBase.choiceThree)
+                        elif i == 3:
+                            choice.append(qBase.choiceFour)
+                    _result.append({
+                        'section_id': sBase.id,
+                        'question_id': qBase.id,
+                        'question_type': qBase.questionType,
+                        'question_info': qBase.questionInfo,
+                        'choices': choice,
+                    })
+                result.append(_result)
+            return result
+        else:
+            raise LogicError("You haven't log in")
+
+    def post(self):
+        if self.request.user.is_authenticated():
+            pass
+        else:
+            raise LogicError("You haven't log in")

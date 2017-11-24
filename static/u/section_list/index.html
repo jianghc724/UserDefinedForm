@@ -47,7 +47,7 @@
     <li class="active"><a class="btn-link" href="/u/apply_list">表单列表</a></li>
     <li class="active"><a class="btn-link" href="/u/question_list">问题模板</a></li>
     <li class="active"><a class="btn-link" href="/u/section_list">部分模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/question_list">表单模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">表单模板</a></li>
 </script>
 
 <script type="text/template" id="tpl-nav-li-right">
@@ -62,7 +62,7 @@
 
         <div class="panel panel-default">
             <div class="panel-heading">
-                <a class="btn btn-default" href="/u/section_detail?create=1">新建部分</a>
+                <a class="btn btn-default" href="/u/create_section">新建部分</a>
             </div>
 
             <table class="table table-hover">
@@ -88,7 +88,7 @@
                         {{ section.creator }}
                     </td>
                     <td class="td-time">
-                        {{ section.time }}
+                        {{ getTime(section.time) }}
                     </td>
                     <td class="td-operations">
                         <a href="/u/section_detail?id={{ section.id }}" target="_blank">
@@ -116,7 +116,7 @@
 
 <script>
     var locals = {
-        applies: []
+        sections: []
     };
     var renderTemplate = function (name) {
         $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));

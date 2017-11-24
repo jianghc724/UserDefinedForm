@@ -62,7 +62,7 @@
 
         <div class="panel panel-default">
             <div class="panel-heading">
-                <a class="btn btn-default" href="/u/form_detail?create=1">新建表单模板</a>
+                <a class="btn btn-default" href="/u/create_form">新建表单模板</a>
             </div>
 
             <table class="table table-hover">
@@ -88,7 +88,7 @@
                         {{ form.creator }}
                     </td>
                     <td class="td-time">
-                        {{ form.time }}
+                        {{ getTime(form.time) }}
                     </td>
                     <td class="td-operations">
                         <a href="/u/form_detail?id={{ form.id }}" target="_blank">
@@ -116,7 +116,7 @@
 
 <script>
     var locals = {
-        applies: []
+        forms: []
     };
     var renderTemplate = function (name) {
         $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));

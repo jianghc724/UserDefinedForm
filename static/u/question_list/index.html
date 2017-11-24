@@ -62,7 +62,7 @@
 
         <div class="panel panel-default">
             <div class="panel-heading">
-                <a class="btn btn-default" href="/u/question_detail?create=1">新建问题</a>
+                <a class="btn btn-default" href="/u/create_question">新建问题</a>
             </div>
 
             <table class="table table-hover">
@@ -88,7 +88,7 @@
                         {{ question.creator }}
                     </td>
                     <td class="td-time">
-                        {{ question.time }}
+                        {{ getTime(question.time) }}
                     </td>
                     <td class="td-operations">
                         <a href="/u/question_detail?id={{ question.id }}" target="_blank">
@@ -116,7 +116,7 @@
 
 <script>
     var locals = {
-        applies: []
+        questions: []
     };
     var renderTemplate = function (name) {
         $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
@@ -136,7 +136,8 @@
                 $.each(data, function (i, question) {
                     updateDate(question, 'time');
                 });
-                locals.applies = data;
+                locals.questions = data;
+                console.log(locals.questions);
                 render();
             }, dftFail);
         });

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #content {
+            padding-top: 80px;
+        }
+    </style>
+    <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/css/finish_apply.css" />
+
+    <title>表单模板列表</title>
+</head>
+<body>
+    <header class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" style="cursor:default" id="nav-title"></a>
+            </div>
+
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav" id="nav-li"></ul>
+                <ul class="nav navbar-nav navbar-right" id="nav-li-right"></ul>
+            </div>
+        </div>
+    </header>
+
+    <div id="content"></div>
+
+    <footer class="bs-footer" role="contentinfo">
+        <hr>
+        <div class="container" id="footer" style="text-align: center"></div>
+    </footer>
+
+<script type="text/template" id="tpl-nav-title">
+表单管理系统
+</script>
+
+<script type="text/template" id="tpl-nav-li">
+    <li class="active"><a class="btn-link" href="/u/apply_list">表单列表</a></li>
+    <li class="active"><a class="btn-link" href="/u/question_list">问题模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/section_list">部分模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">表单模板</a></li>
+</script>
+
+<script type="text/template" id="tpl-nav-li-right">
+    <li><a href="javascript:;" onclick="logout()" >登出</a></li>
+</script>
+
+<script type="text/template" id="tpl-content">
+    <div class="container" xmlns="http://www.w3.org/1999/html">
+        <div class="pageheader">
+            <h1 class="lead">问题列表</h1>
+        </div>
+
+        <div class="panel panel-default">
+            <form class="form-horizontal" role="form" method="post" action="/api/a/finish/form" id="question-form">
+            {% for question in questions %}
+                <div class="form-group" id="{{ question.id }}" class="question">
+                    <label for="input-name" class="col-sm-2 control-label">{{ question.question_info }}</label>
+                    {% if question.question_type == 1 %}
+                        {% for choice in question.choices %}
+                            <input type="radio" name="{{ question.id }}" autofocus value="{{ choice }}">{% choice %}
+                        {% endfor %}
+                    {% else %}
+                        {% if question.question_type == 2 %}
+                            {% for choice in question.choices %}
+                                <input type="checkbox" name="{{ question.id }}" autofocus value="{{ choice }}">{% choice %}
+                            {% endfor %}
+                        {% else %}
+                            <input type="text" maxlength="26" name="{{ question.id }}" autofocus value="{{ question.question_info }}">
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="button" onclick="save();" class="btn btn-primary" id="publishBtn">保存</button>
+                </div>
+            </div>
+           </form>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="tpl-footer">
+
+</script>
+
+<script src="/3rd/jquery.js"></script>
+<script src="/3rd/bs/js/bootstrap.min.js"></script>
+<script src="/3rd/swig.js"></script>
+<script src="/js/base.js"></script>
+<script src="/js/base_admin.js"></script>
+<script src="/js/finish_apply.js"></script>
+
+<script>
+    var locals = {
+        status: -1,
+        form_base_id: urlParam.id,
+        now: new Date(),
+        processResult: ''
+    };
+    var renderTemplate = function (name) {
+        $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
+    };
+    var render = function () {
+        renderTemplate('nav-title');
+        renderTemplate('nav-li');
+        renderTemplate('nav-li-right');
+        renderTemplate('content');
+        renderTemplate('footer');
+        $('.form-control').on('focus', function() {var me = $(this); setTimeout(function(){me.select();}, 100)});
+        api.form($('#question-form'), function (id) {
+            // success
+            locals.form_base.id = id;
+        }, function (errno, errmsg, e) {
+            // fail
+            locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
+        }, function (data) {
+            // before
+            data.status = 0;
+            if (!locals.form_base) {
+                locals.form_base = {};
+            }
+            updateObj(locals.form_base, data);
+            locals.status = 1;
+            locals.processResult = '';
+            render();
+            return true;
+        }, function () {
+            // complete
+            locals.status = 2;
+            render();
+        });
+    };
+    $(function () {
+        swig.setDefaultTZOffset(new Date().getTimezoneOffset());
+        render();
+        loginRequired(function () {
+            if (!urlParam.create) {
+                api.get('/api/a/finish/form', {id: urlParam.id}, function (data) {
+                    locals.status = -1;
+                    data.id = parseInt(urlParam.id);
+                    locals.form_base = data;
+                    render();
+                }, dftFail);
+            }
+        });
+    });
+    var backToForm = function () {
+        locals.status = -1;
+        locals.processResult = '';
+        render();
+    };
+    var save= function () {
+        var data = {};
+        var form = $('#question-form');
+        $.each(form.serializeArray(), function (i, input) {
+            data[input.name] = input.value;
+        });
+        data.status = 1;
+        if (!locals.form_base) {
+            locals.form_base = {};
+        } else {
+            data.id = locals.form_base.id;
+        }
+        updateObj(locals.form_base, data);
+        locals.status = 1;
+        locals.processResult = '';
+        render();
+        api.post(form.attr('action'), data, function (id) {
+            locals.form_base.id = id;
+        }, function (errno, errmsg, e) {
+            locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
+        }, function () {
+            locals.status = 2;
+            render();
+        });
+    };
+</script>
+</body>
+</html>

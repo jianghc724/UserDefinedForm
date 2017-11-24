@@ -78,8 +78,9 @@ class UserInfo(models.Model):
 
 
 class QuestionBase(models.Model):
-    questionInfo = models.TextField()
-    questionType = models.IntegerField() # 1 for single choice 2 for multiple choice 3 for filling 4 for rating
+    questionName = models.TextField(null=True)
+    questionInfo = models.TextField(null=True)
+    questionType = models.IntegerField(default=0) # 1 for single choice 2 for multiple choice 3 for filling 4 for rating
     choiceCount = models.IntegerField(default=0)
     choiceOne = models.CharField(max_length=50)
     choiceTwo = models.CharField(max_length=50)
