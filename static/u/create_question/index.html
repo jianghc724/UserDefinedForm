@@ -56,6 +56,25 @@
 
 <script type="text/template" id="tpl-content">
     <div class="container" xmlns="http://www.w3.org/1999/html">
+        {% if status == 0 %}
+        <div class="container" id="detail-processing">
+            <img src="/img/loading.gif">
+            正在载入，请稍候……
+        </div>
+        {% elif status == 1 %}
+        <div class="container" id="detail-processing">
+            <img src="/img/loading.gif">
+            正在执行，请稍候……
+        </div>
+        {% elif status == 2 %}
+        <div class="container" id="detail-result">
+            <h1>处理结果</h1>
+            <pre id="resultHolder">{{ processResult|default('成功') }}</pre>
+            <div class="col-sm-offset-2">
+                <a class="btn btn-success" href="/u/question_list">返回问题列表</a>
+            </div>
+        </div>
+        {% else %}
         <div class="pageheader">
             <h1 class="lead">创建问题</h1>
         </div>
@@ -102,6 +121,7 @@
                 </div>
            </form>
         </div>
+        {% endif %}
     </div>
 </script>
 

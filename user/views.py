@@ -100,14 +100,15 @@ class CheckQuestionBase(APIView):
             self.check_input('id')
             question = QuestionBase.objects.get(id=self.input['id'])
             if question:
+                choice = []
+                choice.append(question.choiceOne)
+                choice.append(question.choiceTwo)
+                choice.append(question.choiceThree)
+                choice.append(question.choiceFour)
                 result = {
                     'question_type': question.questionType,
                     'question_info': question.questionInfo,
-                    'choice_number': question.choiceCount,
-                    'choice_one': question.choiceOne,
-                    'choice_two': question.choiceTwo,
-                    'choice_three': question.choiceThree,
-                    'choice_four': question.choiceFour,
+                    'choices': choice,
                 }
                 return result
             else:
@@ -149,8 +150,7 @@ class CreateSection(APIView):
             for questionBase in questionBases:
                 result.append({
                     'id': questionBase.id,
-                    'creator': questionBase.creator.user.username,
-                    'create_time':questionBase.createTime,
+                    'name': questionBase.questionName,
                 })
             return result
         else:
@@ -158,13 +158,12 @@ class CreateSection(APIView):
 
     def post(self):
         if self.request.user.is_authenticated():
-            self.check_input('questions')
             s = SectionBase.objects.create(creator=self.request.user, createTime=datetime.now())
             i = 0
-            for q in self.input['questions']:
+            for q in self.input:
                 s.questionBases.add(QuestionBase.objects.get(id=q))
                 i = i + 1
-            s.sectionCount = i
+            s.questionCount = i
             s.save()
         else:
             raise LogicError("You have no authority to access")
@@ -205,8 +204,8 @@ class SectionBaseList(APIView):
             for sectionBase in sectionBases:
                 result.append({
                     'id': sectionBase.id,
-                    'creator': sectionBase.creator.user.username,
-                    'time':sectionBase.createTime,
+                    'creator': sectionBase.creator_id,
+                    'time':sectionBase.createTime.timestamp(),
                 })
             return result
         else:
@@ -224,8 +223,6 @@ class CreateForm(APIView):
             for sectionBase in sectionBases:
                 result.append({
                     'id': sectionBase.id,
-                    'creator': sectionBase.creator.user.username,
-                    'time':sectionBase.createTime,
                 })
             return result
         else:
@@ -233,10 +230,9 @@ class CreateForm(APIView):
 
     def post(self):
         if self.request.user.is_authenticated():
-            self.check_input('sections')
             f = FormBase.objects.create(creator=self.request.user, createTime=datetime.now())
             i = 0
-            for s in self.input['sections']:
+            for s in self.input:
                 f.sectionBases.add(SectionBase.objects.get(id=s))
                 i = i + 1
             f.sectionCount = i
@@ -281,8 +277,8 @@ class FormBaseList(APIView):
             for formBase in formBases:
                 result.append({
                     'id': formBase.id,
-                    'creator': formBase.creator.user.username,
-                    'create_time':formBase.createTime,
+                    'creator': formBase.creator_id,
+                    'time':formBase.createTime.timestamp(),
                 })
             return result
         else:

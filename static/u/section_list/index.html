@@ -69,7 +69,6 @@
                 <thead>
                 <tr>
                     <th>编号</th>
-                    <th>模板名</th>
                     <th>创建人</th>
                     <th>创建时间</th>
                     <th>操作</th>
@@ -80,9 +79,6 @@
                 <tr id="act-{{ section.id }}">
                     <td class="td-id">
                         {{ section.id }}
-                    </td>
-                    <td class="td-name">
-                        {{ section.name }}
                     </td>
                     <td class="td-creator">
                         {{ section.creator }}
@@ -136,7 +132,7 @@
                 $.each(data, function (i, section) {
                     updateDate(section, 'time');
                 });
-                locals.applies = data;
+                locals.sections = data;
                 render();
             }, dftFail);
         });
