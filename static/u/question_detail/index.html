@@ -62,7 +62,7 @@
 
         <div class="panel panel-default">
         <form class="form-horizontal" role="form" id="question-form">
-            <label for="input-name" class="col-sm-2 control-label">{{ question.question_info }}</label>
+            <label for="input-name" class="col-sm-2">{{ question.question_info }}</label>
             <div class="col-sm-10">
                 {% if question.question_type == 1 %}
                     {% for choice in question.choices %}
