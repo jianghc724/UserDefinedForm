@@ -102,7 +102,7 @@
                         <button class="btn btn-link" onclick="removemenu({{ loop.index0 }})">
                             <span class="glyphicon glyphicon-remove"></span>
                         </button>
-                        {{ menu.id }}
+                        {{ menu.name }}
                     </li>
                 {% endfor %}
                 </ul>
@@ -119,7 +119,7 @@
                         <button class="btn btn-link" onclick="change_alter({{ loop.index0 }})">
                             <span class="glyphicon glyphicon-plus"></span>
                         </button>
-                        {{ menu.id }}
+                        {{ menu.name }}
                     </li>
                 {% endfor %}
                 </ul>

@@ -48,20 +48,22 @@ class FormList(APIView):
                 forms = Form.objects.all()
                 result = []
                 for form in forms:
+                    u_name = User.objects.get(id=form.rater_id).username
                     result.append({
                         'id': form.id,
                         'time': form.finishTime.timestamp(),
-                        'rater': form.rater_id
+                        'rater':u_name,
                     })
                 return result
             else:
                 forms = Form.objects.filter(rater=user)
                 result = []
                 for form in forms:
+                    u_name = User.objects.get(id=form.rater_id).username
                     result.append({
                         'id': form.id,
                         'time': form.finishTimetimestamp(),
-                        'rater': form.rater.rater_id
+                        'rater': u_name,
                     })
         else:
             raise LogicError("You haven't log in")
@@ -126,12 +128,12 @@ class QuestionBaseList(APIView):
             questionBases = QuestionBase.objects.all()
             result = []
             for questionBase in questionBases:
-                # bug to fix: creator
+                u_name = User.objects.get(id=questionBase.creator_id).username
                 print (questionBase.createTime)
                 result.append({
                     'id': questionBase.id,
                     'name':questionBase.questionName,
-                    'creator': questionBase.creator_id,
+                    'creator': u_name,
                     'time':questionBase.createTime.timestamp(),
                 })
             return result
@@ -207,10 +209,11 @@ class SectionBaseList(APIView):
             sectionBases = SectionBase.objects.all()
             result = []
             for sectionBase in sectionBases:
+                u_name = User.objects.get(id=sectionBase.creator_id).username
                 result.append({
                     'id': sectionBase.id,
                     'name': sectionBase.name,
-                    'creator': sectionBase.creator_id,
+                    'creator': u_name,
                     'time':sectionBase.createTime.timestamp(),
                 })
             return result
@@ -290,10 +293,11 @@ class FormBaseList(APIView):
             formBases = FormBase.objects.all()
             result = []
             for formBase in formBases:
+                u_name = User.objects.get(id=formBase.creator_id).username
                 result.append({
                     'id': formBase.id,
                     'name': formBase.name,
-                    'creator': formBase.creator_id,
+                    'creator': u_name,
                     'time':formBase.createTime.timestamp(),
                 })
             return result
@@ -310,10 +314,11 @@ class HandleApply(APIView):
             formBases = FormBase.objects.all()
             result = []
             for formBase in formBases:
+                u_name = User.objects.get(id=formBase.creator_id).username
                 result.append({
                     'id': formBase.id,
                     'name': formBase.name,
-                    'creator': formBase.creator_id,
+                    'creator': u_name,
                     'time':formBase.createTime.timestamp(),
                 })
             return result
