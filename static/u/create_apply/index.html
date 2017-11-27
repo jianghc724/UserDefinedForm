@@ -65,7 +65,6 @@
                 <thead>
                 <tr>
                     <th>编号</th>
-                    <th>模板名</th>
                     <th>创建人</th>
                     <th>创建时间</th>
                     <th>操作</th>
@@ -77,14 +76,11 @@
                     <td class="td-id">
                         {{ form.id }}
                     </td>
-                    <td class="td-name">
-                        {{ form.name }}
-                    </td>
                     <td class="td-creator">
                         {{ form.creator }}
                     </td>
                     <td class="td-time">
-                        {{ form.time }}
+                        {{ getTime(form.time) }}
                     </td>
                     <td class="td-operations">
                         <a href="/u/finish_apply?id={{ form.id }}" target="_blank">
@@ -132,7 +128,7 @@
                 $.each(data, function (i, form) {
                     updateDate(form, 'time');
                 });
-                locals.applies = data;
+                locals.forms = data;
                 render();
             }, dftFail);
         });

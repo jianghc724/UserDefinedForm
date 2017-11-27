@@ -61,23 +61,27 @@
         </div>
 
         <div class="panel panel-default">
-            <form class="form-horizontal" role="form" method="post" action="/api/a/finish/form" id="question-form">
-            {% for question in questions %}
-                <div class="form-group" id="{{ question.id }}" class="question">
-                    <label for="input-name" class="col-sm-2 control-label">{{ question.question_info }}</label>
-                    {% if question.question_type == 1 %}
-                        {% for choice in question.choices %}
-                            <input type="radio" name="{{ question.id }}" autofocus value="{{ choice }}">{% choice %}
-                        {% endfor %}
-                    {% else %}
-                        {% if question.question_type == 2 %}
+            <form class="form-horizontal" role="form" method="post" action="/api/u/finish/form" id="question-form">
+            {% for section in form_base %}
+                <div class="section-group">
+                    {% for question in section %}
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-2 control-label">{{ question.question_info }}</label>
+                        {% if question.question_type == 1 %}
                             {% for choice in question.choices %}
-                                <input type="checkbox" name="{{ question.id }}" autofocus value="{{ choice }}">{% choice %}
+                                <input type="radio" id="{{ getid(question.section_id, question.question_id) }}" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="{{ choice }}">{{ choice }}
                             {% endfor %}
                         {% else %}
-                            <input type="text" maxlength="26" name="{{ question.id }}" autofocus value="{{ question.question_info }}">
+                            {% if question.question_type == 2 %}
+                                {% for choice in question.choices %}
+                                    <input type="checkbox" id="{{ getid(question.section_id, question.question_id) }}" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="{{ choice }}">{{ choice }}
+                                {% endfor %}
+                            {% else %}
+                                <input type="text" maxlength="26" id="{{ getid(question.section_id, question.question_id) }}" name="{{ getid(question.section_id, question.question_id) }}" autofocus>
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
+                    </div>
+                    {% endfor %}
                 </div>
             {% endfor %}
             <div class="form-group">
@@ -99,7 +103,6 @@
 <script src="/3rd/swig.js"></script>
 <script src="/js/base.js"></script>
 <script src="/js/base_admin.js"></script>
-<script src="/js/finish_apply.js"></script>
 
 <script>
     var locals = {
@@ -146,7 +149,7 @@
         render();
         loginRequired(function () {
             if (!urlParam.create) {
-                api.get('/api/a/finish/form', {id: urlParam.id}, function (data) {
+                api.get('/api/u/finish/form', {id: urlParam.id}, function (data) {
                     locals.status = -1;
                     data.id = parseInt(urlParam.id);
                     locals.form_base = data;
@@ -160,10 +163,14 @@
         locals.processResult = '';
         render();
     };
+    var getid = function(s, q){
+        return s.toString() + '_' + q.toString();
+    }
     var save= function () {
         var data = {};
         var form = $('#question-form');
         $.each(form.serializeArray(), function (i, input) {
+            console.log(input)
             data[input.name] = input.value;
         });
         data.status = 1;
@@ -176,6 +183,7 @@
         locals.status = 1;
         locals.processResult = '';
         render();
+        console.log(data)
         api.post(form.attr('action'), data, function (id) {
             locals.form_base.id = id;
         }, function (errno, errmsg, e) {

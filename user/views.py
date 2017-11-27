@@ -103,8 +103,10 @@ class CheckQuestionBase(APIView):
                 choice = []
                 choice.append(question.choiceOne)
                 choice.append(question.choiceTwo)
-                choice.append(question.choiceThree)
-                choice.append(question.choiceFour)
+                if not question.choiceThree == '':
+                    choice.append(question.choiceThree)
+                if not question.choiceFour == '':
+                    choice.append(question.choiceFour)
                 result = {
                     'question_type': question.questionType,
                     'question_info': question.questionInfo,
@@ -177,14 +179,17 @@ class CheckSectionBase(APIView):
             if section:
                 result = []
                 for question in section.questions:
+                    choice = []
+                    choice.append(question.choiceOne)
+                    choice.append(question.choiceTwo)
+                    if not question.choiceThree == '':
+                        choice.append(question.choiceThree)
+                    if not question.choiceFour == '':
+                        choice.append(question.choiceFour)
                     result.append({
                         'question_type': question.questionType,
                         'question_info': question.questionInfo,
-                        'choice_number': question.choiceCount,
-                        'choice_one': question.choiceOne,
-                        'choice_two': question.choiceTwo,
-                        'choice_three': question.choiceThree,
-                        'choice_four': question.choiceFour,
+                        'choices': choice,
                     })
                 return result
             else:
@@ -346,19 +351,16 @@ class FinishForm(APIView):
             self.check_input('id')
             fBase = FormBase.objects.get(id=self.input['id'])
             result = []
-            for sBase in fBase.sectionBases:
+            for sBase in fBase.sectionBases.all():
                 _result = []
-                for qBase in sBase.questionBases:
+                for qBase in sBase.questionBases.all():
                     choice = []
-                    for i in range(0,qBase.choiceCount):
-                        if i == 0:
-                            choice.append(qBase.choiceOne)
-                        elif i == 1:
-                            choice.append(qBase.choiceTwo)
-                        elif i == 2:
-                            choice.append(qBase.choiceThree)
-                        elif i == 3:
-                            choice.append(qBase.choiceFour)
+                    choice.append(qBase.choiceOne)
+                    choice.append(qBase.choiceTwo)
+                    if not qBase.choiceThree == '':
+                        choice.append(qBase.choiceThree)
+                    if not qBase.choiceFour == '':
+                        choice.append(qBase.choiceFour)
                     _result.append({
                         'section_id': sBase.id,
                         'question_id': qBase.id,
