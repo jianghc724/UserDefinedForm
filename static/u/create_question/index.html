@@ -11,7 +11,7 @@
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/css/create_question.css" />
 
-    <title>表单模板列表</title>
+    <title>设置问题模板</title>
 </head>
 <body>
     <header class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -193,6 +193,35 @@
         $.each(form.serializeArray(), function (i, input) {
             data[input.name] = input.value;
         });
+        if (data['name'] == '') {
+            alert("请填写名称");
+            return;
+        }
+        if (data['info'] == '') {
+            alert("请填写描述");
+            return;
+        }
+        if (data['type'] == 'single'){
+            if (data['choiceOne'] == '') {
+                alert("请填写选项一");
+                return;
+            }
+            if (data['choiceTwo'] == '') {
+                alert("请填写选项二");
+                return;
+            }
+        }
+        if (data['type'] == 'multiple') {
+            if (data['choiceOne'] == '') {
+                alert("请填写选项一");
+                return;
+            }
+            if (data['choiceTwo'] == '') {
+                alert("请填写选项二");
+                return;
+            }
+        }
+        console.log(data);
         data.status = 1;
         if (!locals.question) {
             locals.question = {};

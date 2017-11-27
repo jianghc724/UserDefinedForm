@@ -11,7 +11,7 @@
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/css/finish_apply.css" />
 
-    <title>表单模板列表</title>
+    <title>表单填写</title>
 </head>
 <body>
     <header class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -81,15 +81,15 @@
                         <div class="col-sm-10">
                             {% if question.question_type == 1 %}
                                 {% for choice in question.choices %}
-                                    <input type="radio" id="{{ getid(question.section_id, question.question_id) }}" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="{{ choice }}">{{ choice }}
+                                    <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="{{ choice }}">{{ choice }}
                                 {% endfor %}
                             {% else %}
                                 {% if question.question_type == 2 %}
                                     {% for choice in question.choices %}
-                                        <input type="checkbox" id="{{ getid(question.section_id, question.question_id) }}" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="{{ choice }}">{{ choice }}
+                                        <input type="checkbox" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="{{ choice }}">{{ choice }}
                                     {% endfor %}
                                 {% else %}
-                                    <input type="text" maxlength="26" id="{{ getid(question.section_id, question.question_id) }}" name="{{ getid(question.section_id, question.question_id) }}" autofocus>
+                                    <input type="text" maxlength="26" name="{{ getid(question.section_id, question.question_id) }}" autofocus>
                                 {% endif %}
                             {% endif %}
                         </div>
@@ -123,7 +123,9 @@
         status: -1,
         form_base_id: urlParam.id,
         now: new Date(),
-        processResult: ''
+        processResult: '',
+        question_id: [],
+        temp: []
     };
     var renderTemplate = function (name) {
         $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
@@ -178,17 +180,55 @@
         render();
     };
     var getid = function(s, q){
-        return s.toString() + '_' + q.toString();
+        var r = s.toString() + '_' + q.toString();
+        var isExist = false;
+        for (var i = 0; i < locals.question_id.length; i++) {
+            if (r == locals.question_id[i]) {
+                isExist = true;
+                break;
+            }
+        }
+        if (isExist == false) {
+            locals.question_id.push(r);
+            locals.temp.push(r);
+        }
+        return r;
     }
     var save= function () {
+        var counter = 0;
         var data = [];
+        var flag = false;
         var form = $('#question-form');
         $.each(form.serializeArray(), function (i, input) {
             var _data = {};
+            if (input.value == ''){
+                alert("请完成表单的每一项");
+                flag = true;
+                return;
+            }
             _data["id"] = input.name;
+            for (var i = 0; i < locals.temp.length; i++) {
+                if (locals.temp[i] == input.name) {
+                    locals.temp.splice(i, 1);
+                    counter++;
+                }
+            }
             _data["value"] = input.value;
             data.push(_data);
         });
+        if (flag) {
+            for (var i = 0; i < locals.question_id.length; i++) {
+                locals.temp.push(locals.question_id[i]);
+            }
+            return;
+        }
+        if (counter != locals.question_id.length) {
+            alert("请完成表单的每一项");
+            for (var i = 0; i < locals.question_id.length; i++) {
+                locals.temp.push(locals.question_id[i]);
+            }
+            return;
+        }
         data.status = 1;
         if (!locals.form_base) {
             locals.form_base = {};
@@ -199,7 +239,6 @@
         locals.status = 1;
         locals.processResult = '';
         render();
-        console.log(data)
         api.post(form.attr('action'), data, function (id) {
             locals.form_base.id = id;
         }, function (errno, errmsg, e) {

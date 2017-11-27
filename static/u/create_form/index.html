@@ -11,7 +11,7 @@
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/css/create_form.css" />
 
-    <title>表单模板列表</title>
+    <title>设置表单模板</title>
 </head>
 <body>
     <header class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -175,10 +175,18 @@
     });
     var submitMenu = function () {
         var data = {};
-        var ids = $.map(locals.usedQuestions, function (question) {
-            return question.id;
+        var ids = $.map(locals.usedSections, function (section) {
+            return section.id;
         });
         var name = $('input:text').val();
+        if (name == '') {
+            alert('请填写模板名');
+            return;
+        }
+        if (ids.length == 0) {
+            alert('请选择至少一个模板');
+            return;
+        }
         data["id"] = ids;
         data["name"] = name;
         locals.status = 1;
