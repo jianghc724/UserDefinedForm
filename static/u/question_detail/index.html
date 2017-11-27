@@ -61,20 +61,24 @@
         </div>
 
         <div class="panel panel-default">
+        <form class="form-horizontal" role="form" id="question-form">
             <label for="input-name" class="col-sm-2 control-label">{{ question.question_info }}</label>
-            {% if question.question_type == 1 %}
-                {% for choice in question.choices %}
-                    <input type="radio" name="{{ question.id }}" autofocus value="{{ choice }}">{{ choice }}
-                {% endfor %}
-            {% else %}
-                {% if question.question_type == 2 %}
+            <div class="col-sm-10">
+                {% if question.question_type == 1 %}
                     {% for choice in question.choices %}
-                        <input type="checkbox" name="{{ question.id }}" autofocus value="{{ choice }}">{{ choice }}
+                        <input type="radio" name="{{ question.id }}" autofocus value="{{ choice }}">{{ choice }}
                     {% endfor %}
                 {% else %}
-                    <input type="text" maxlength="26" name="{{ question.id }}" autofocus>
+                    {% if question.question_type == 2 %}
+                        {% for choice in question.choices %}
+                            <input type="checkbox" name="{{ question.id }}" autofocus value="{{ choice }}">{{ choice }}
+                        {% endfor %}
+                    {% else %}
+                        <input type="text" maxlength="26" name="{{ question.id }}" autofocus>
+                    {% endif %}
                 {% endif %}
-            {% endif %}
+            </div>
+        </form>
         </div>
     </div>
 </script>

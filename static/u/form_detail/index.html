@@ -9,7 +9,7 @@
         }
     </style>
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="/css/finish_apply.css" />
+    <link rel="stylesheet" href="/css/form_detail.css" />
 
     <title>表单模板列表</title>
 </head>
@@ -61,7 +61,7 @@
         </div>
 
         <div class="panel panel-default">
-            <form class="form-horizontal" role="form" method="post" action="/api/u/finish/form" id="question-form">
+            <form class="form-horizontal" role="form" id="question-form">
             {% for section in form_base %}
                 <div class="section-group">
                     {% for question in section %}
@@ -86,11 +86,6 @@
                     {% endfor %}
                 </div>
             {% endfor %}
-            <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                    <button type="button" onclick="save();" class="btn btn-primary" id="publishBtn">保存</button>
-                </div>
-            </div>
             </form>
         </div>
     </div>
@@ -151,7 +146,7 @@
         render();
         loginRequired(function () {
             if (!urlParam.create) {
-                api.get('/api/u/finish/form', {id: urlParam.id}, function (data) {
+                api.get('/api/u/form/detail', {id: urlParam.id}, function (data) {
                     locals.status = -1;
                     data.id = parseInt(urlParam.id);
                     locals.form_base = data;
@@ -168,33 +163,6 @@
     var getid = function(s, q){
         return s.toString() + '_' + q.toString();
     }
-    var save= function () {
-        var data = {};
-        var form = $('#question-form');
-        $.each(form.serializeArray(), function (i, input) {
-            console.log(input)
-            data[input.name] = input.value;
-        });
-        data.status = 1;
-        if (!locals.form_base) {
-            locals.form_base = {};
-        } else {
-            data.id = locals.form_base.id;
-        }
-        updateObj(locals.form_base, data);
-        locals.status = 1;
-        locals.processResult = '';
-        render();
-        console.log(data)
-        api.post(form.attr('action'), data, function (id) {
-            locals.form_base.id = id;
-        }, function (errno, errmsg, e) {
-            locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
-        }, function () {
-            locals.status = 2;
-            render();
-        });
-    };
 </script>
 </body>
 </html>

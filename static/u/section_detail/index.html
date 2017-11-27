@@ -9,7 +9,7 @@
         }
     </style>
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="/css/finish_apply.css" />
+    <link rel="stylesheet" href="/css/section_detail.css" />
 
     <title>表单模板列表</title>
 </head>
@@ -61,36 +61,29 @@
         </div>
 
         <div class="panel panel-default">
-            <form class="form-horizontal" role="form" method="post" action="/api/u/finish/form" id="question-form">
-            {% for section in form_base %}
+            <form class="form-horizontal" role="form" id="question-form">
                 <div class="section-group">
-                    {% for question in section %}
+                    {% for question in section_base %}
                     <div class="form-group" class="question">
                         <label for="input-name" class="col-sm-2 control-label">{{ question.question_info }}</label>
                         <div class="col-sm-10">
                             {% if question.question_type == 1 %}
                                 {% for choice in question.choices %}
-                                    <input type="radio" id="{{ getid(question.section_id, question.question_id) }}" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="{{ choice }}">{{ choice }}
+                                    <input type="radio" id="{{ question.question_id }}" name="{{ question.question_id }}" autofocus value="{{ choice }}">{{ choice }}
                                 {% endfor %}
                             {% else %}
                                 {% if question.question_type == 2 %}
                                     {% for choice in question.choices %}
-                                        <input type="checkbox" id="{{ getid(question.section_id, question.question_id) }}" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="{{ choice }}">{{ choice }}
+                                        <input type="checkbox" id="{{ question.question_id }}" name="{{ question.question_id }}" autofocus value="{{ choice }}">{{ choice }}
                                     {% endfor %}
                                 {% else %}
-                                    <input type="text" maxlength="26" id="{{ getid(question.section_id, question.question_id) }}" name="{{ getid(question.section_id, question.question_id) }}" autofocus>
+                                    <input type="text" maxlength="26" id="{{ question.question_id }}" name="{{ question.question_id }}" autofocus>
                                 {% endif %}
                             {% endif %}
                         </div>
                     </div>
                     {% endfor %}
                 </div>
-            {% endfor %}
-            <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                    <button type="button" onclick="save();" class="btn btn-primary" id="publishBtn">保存</button>
-                </div>
-            </div>
             </form>
         </div>
     </div>
@@ -109,7 +102,7 @@
 <script>
     var locals = {
         status: -1,
-        form_base_id: urlParam.id,
+        section_base_id: urlParam.id,
         now: new Date(),
         processResult: ''
     };
@@ -125,15 +118,15 @@
         $('.form-control').on('focus', function() {var me = $(this); setTimeout(function(){me.select();}, 100)});
         api.form($('#question-form'), function (id) {
             // success
-            locals.form_base.id = id;
+            locals.section_base.id = id;
         }, function (errno, errmsg, e) {
             // fail
             locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
         }, function (data) {
             // before
             data.status = 0;
-            if (!locals.form_base) {
-                locals.form_base = {};
+            if (!locals.section_base) {
+                locals.section_base = {};
             }
             updateObj(locals.form_base, data);
             locals.status = 1;
@@ -151,10 +144,10 @@
         render();
         loginRequired(function () {
             if (!urlParam.create) {
-                api.get('/api/u/finish/form', {id: urlParam.id}, function (data) {
+                api.get('/api/u/section/detail', {id: urlParam.id}, function (data) {
                     locals.status = -1;
                     data.id = parseInt(urlParam.id);
-                    locals.form_base = data;
+                    locals.section_base = data;
                     render();
                 }, dftFail);
             }
@@ -168,33 +161,6 @@
     var getid = function(s, q){
         return s.toString() + '_' + q.toString();
     }
-    var save= function () {
-        var data = {};
-        var form = $('#question-form');
-        $.each(form.serializeArray(), function (i, input) {
-            console.log(input)
-            data[input.name] = input.value;
-        });
-        data.status = 1;
-        if (!locals.form_base) {
-            locals.form_base = {};
-        } else {
-            data.id = locals.form_base.id;
-        }
-        updateObj(locals.form_base, data);
-        locals.status = 1;
-        locals.processResult = '';
-        render();
-        console.log(data)
-        api.post(form.attr('action'), data, function (id) {
-            locals.form_base.id = id;
-        }, function (errno, errmsg, e) {
-            locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
-        }, function () {
-            locals.status = 2;
-            render();
-        });
-    };
 </script>
 </body>
 </html>

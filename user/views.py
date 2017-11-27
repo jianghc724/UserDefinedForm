@@ -160,9 +160,10 @@ class CreateSection(APIView):
 
     def post(self):
         if self.request.user.is_authenticated():
-            s = SectionBase.objects.create(creator=self.request.user, createTime=datetime.now())
+            self.check_input('name', 'id')
+            s = SectionBase.objects.create(name=self.input['name'], creator=self.request.user, createTime=datetime.now())
             i = 0
-            for q in self.input:
+            for q in self.input['id']:
                 s.questionBases.add(QuestionBase.objects.get(id=q))
                 i = i + 1
             s.questionCount = i
@@ -178,7 +179,7 @@ class CheckSectionBase(APIView):
             section = SectionBase.objects.get(id=self.input['id'])
             if section:
                 result = []
-                for question in section.questions:
+                for question in section.questionBases.all():
                     choice = []
                     choice.append(question.choiceOne)
                     choice.append(question.choiceTwo)
@@ -187,6 +188,7 @@ class CheckSectionBase(APIView):
                     if not question.choiceFour == '':
                         choice.append(question.choiceFour)
                     result.append({
+                        'question_id': question.id,
                         'question_type': question.questionType,
                         'question_info': question.questionInfo,
                         'choices': choice,
@@ -209,6 +211,7 @@ class SectionBaseList(APIView):
             for sectionBase in sectionBases:
                 result.append({
                     'id': sectionBase.id,
+                    'name': sectionBase.name,
                     'creator': sectionBase.creator_id,
                     'time':sectionBase.createTime.timestamp(),
                 })
@@ -228,6 +231,7 @@ class CreateForm(APIView):
             for sectionBase in sectionBases:
                 result.append({
                     'id': sectionBase.id,
+                    'name': sectionBase.name,
                 })
             return result
         else:
@@ -235,9 +239,10 @@ class CreateForm(APIView):
 
     def post(self):
         if self.request.user.is_authenticated():
-            f = FormBase.objects.create(creator=self.request.user, createTime=datetime.now())
+            self.check_input('name', 'id')
+            f = FormBase.objects.create(name=self.input['name'], creator=self.request.user, createTime=datetime.now())
             i = 0
-            for s in self.input:
+            for s in self.input['id']:
                 f.sectionBases.add(SectionBase.objects.get(id=s))
                 i = i + 1
             f.sectionCount = i
@@ -253,17 +258,24 @@ class CheckFormBase(APIView):
             form = FormBase.objects.get(id=self.input['id'])
             if form:
                 result = []
-                for section in form.sections:
-                    for question in section.questions:
-                        result.append({
+                for section in form.sectionBases.all():
+                    _result = []
+                    for question in section.questionBases.all():
+                        choice = []
+                        choice.append(question.choiceOne)
+                        choice.append(question.choiceTwo)
+                        if not question.choiceThree == '':
+                            choice.append(question.choiceThree)
+                        if not question.choiceFour == '':
+                            choice.append(question.choiceFour)
+                        _result.append({
+                            'section_id': section.id,
+                            'question_id': question.id,
                             'question_type': question.questionType,
                             'question_info': question.questionInfo,
-                            'choice_number': question.choiceCount,
-                            'choice_one': question.choiceOne,
-                            'choice_two': question.choiceTwo,
-                            'choice_three': question.choiceThree,
-                            'choice_four': question.choiceFour,
+                            'choices': choice,
                         })
+                    result.append(_result)
                 return result
             else:
                 raise LogicError('No such form base')
@@ -282,6 +294,7 @@ class FormBaseList(APIView):
             for formBase in formBases:
                 result.append({
                     'id': formBase.id,
+                    'name': formBase.name,
                     'creator': formBase.creator_id,
                     'time':formBase.createTime.timestamp(),
                 })

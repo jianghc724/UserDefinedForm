@@ -91,6 +91,7 @@ class QuestionBase(models.Model):
 
 
 class SectionBase(models.Model):
+    name = models.TextField(null=True)
     questionCount = models.IntegerField(default=0)
     questionBases = models.ManyToManyField(QuestionBase)
     creator = models.ForeignKey(User, null=True)
@@ -98,6 +99,7 @@ class SectionBase(models.Model):
 
 
 class FormBase(models.Model):
+    name = models.TextField(null=True)
     sectionCount = models.IntegerField(default=0)
     sectionBases = models.ManyToManyField(SectionBase)
     creator = models.ForeignKey(User, null=True)

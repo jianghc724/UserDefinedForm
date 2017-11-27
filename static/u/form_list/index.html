@@ -69,6 +69,7 @@
                 <thead>
                 <tr>
                     <th>编号</th>
+                    <th>模板名</th>
                     <th>创建人</th>
                     <th>创建时间</th>
                     <th>操作</th>
@@ -79,6 +80,9 @@
                 <tr id="act-{{ form.id }}">
                     <td class="td-id">
                         {{ form.id }}
+                    </td>
+                    <td class="td-id">
+                        {{ form.name }}
                     </td>
                     <td class="td-creator">
                         {{ form.creator }}

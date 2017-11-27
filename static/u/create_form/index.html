@@ -71,6 +71,14 @@
         <div class="pageheader">
             <h1 class="lead">设置表单模板</h1>
         </div>
+        <div class="forms">
+            <label for="f-name" class="col-sm-6 control-label">模板名</label>
+            <div class="col-sm-6">
+                <input type="text" maxlength="26" id="form-name" autofocus>
+            </div>
+        </div>
+        <br/>
+        <br/>
         <div class="col-xs-4">
             <div class="panel panel-default">
                 <div class="panel-heading">现在设置的部分：</div>
@@ -166,12 +174,16 @@
         });
     });
     var submitMenu = function () {
-        var ids = $.map(locals.usedSections, function (section) {
-            return section.id;
+        var data = {};
+        var ids = $.map(locals.usedQuestions, function (question) {
+            return question.id;
         });
+        var name = $('input:text').val();
+        data["id"] = ids;
+        data["name"] = name;
         locals.status = 1;
         render();
-        api.post('/api/u/create/form', ids, function (data) {
+        api.post('/api/u/create/form', data, function (data) {
             locals.status = 2;
             render();
         }, function (errno, errmsg, e) {

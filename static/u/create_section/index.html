@@ -71,6 +71,14 @@
         <div class="pageheader">
             <h1 class="lead">设置部分模板</h1>
         </div>
+        <div class="section">
+            <label for="s-name" class="col-sm-6 control-label">模板名</label>
+            <div class="col-sm-6">
+                <input type="text" maxlength="26" id="section-name" autofocus>
+            </div>
+        </div>
+        <br/>
+        <br/>
         <div class="col-xs-4">
             <div class="panel panel-default">
                 <div class="panel-heading">现在设置的问题：</div>
@@ -166,12 +174,17 @@
         });
     });
     var submitMenu = function () {
+        var data = {};
         var ids = $.map(locals.usedQuestions, function (question) {
             return question.id;
         });
+        var name = $('input:text').val();
+        data["id"] = ids;
+        data["name"] = name;
+        console.log(data);
         locals.status = 1;
         render();
-        api.post('/api/u/create/section', ids, function (data) {
+        api.post('/api/u/create/section', data, function (data) {
             locals.status = 2;
             render();
         }, function (errno, errmsg, e) {
