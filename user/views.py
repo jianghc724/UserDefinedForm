@@ -49,10 +49,9 @@ class FormList(APIView):
                 result = []
                 for form in forms:
                     result.append({
-                        'status': form.formFinished,
                         'id': form.id,
-                        'time': form.finishTime,
-                        'rater': form.rater.user.username
+                        'time': form.finishTime.timestamp(),
+                        'rater': form.rater_id
                     })
                 return result
             else:
@@ -60,10 +59,9 @@ class FormList(APIView):
                 result = []
                 for form in forms:
                     result.append({
-                        'status': form.formFinished,
                         'id': form.id,
-                        'time': form.finishTime,
-                        'rater': form.rater.user.username
+                        'time': form.finishTimetimestamp(),
+                        'rater': form.rater.rater_id
                     })
         else:
             raise LogicError("You haven't log in")
@@ -314,8 +312,9 @@ class HandleApply(APIView):
             for formBase in formBases:
                 result.append({
                     'id': formBase.id,
-                    'creator': formBase.creator.user.username,
-                    'create_time': formBase.createTime,
+                    'name': formBase.name,
+                    'creator': formBase.creator_id,
+                    'time':formBase.createTime.timestamp(),
                 })
             return result
         else:
@@ -332,22 +331,16 @@ class CheckForm(APIView):
             form = Form.objects.get(id=self.input['id'])
             if form:
                 result = []
-                for section in form.sections:
-                    for question in section.questions:
-                        result.append({
-                            'question_type': question.question.questionType,
+                for section in form.sections.all():
+                    _result = []
+                    for question in section.questions.all():
+                        _result.append({
+                            'section_id': section.id,
+                            'question_id': question.id,
                             'question_info': question.question.questionInfo,
                             'result': question.result,
-                            'choice_number': question.question.choiceCount,
-                            'choice_one': question.question.choiceOne,
-                            'is_choice_one': question.isChoiceOne,
-                            'choice_two': question.question.choiceTwo,
-                            'is_choice_two': question.isChoiceTwo,
-                            'choice_three': question.question.choiceThree,
-                            'is_choice_three': question.isChoiceThree,
-                            'choice_four': question.question.choiceFour,
-                            'is_choice_four': question.isChoiceFour,
                         })
+                    result.append(_result)
                 return result
             else:
                 raise LogicError("No such Form")
@@ -388,6 +381,40 @@ class FinishForm(APIView):
 
     def post(self):
         if self.request.user.is_authenticated():
-            pass
+            f = Form.objects.create(finishTime=datetime.now(), rater=self.request.user)
+            pre_s_id = -1
+            pre_q_id = -1
+            pre_s = None
+            r = ""
+            for question in self.input:
+                str = question['id']
+                res = question['value']
+                s_id = int(str.split('_')[0])
+                q_id = int(str.split('_')[1])
+                if not s_id == pre_s_id:
+                    if pre_s is not None:
+                        q = Question.objects.create(result=r, question=QuestionBase.objects.get(id=pre_q_id))
+                        pre_s.questions.add(q)
+                        pre_s.save()
+                        f.sections.add(pre_s)
+                        r = ""
+                        pre_q_id = -1
+                    pre_s = Section.objects.create(name=SectionBase.objects.get(id=s_id).name)
+                    pre_s_id = s_id
+                    pre_q_id = q_id
+                    r = res
+                else:
+                    if not pre_q_id == q_id:
+                        q = Question.objects.create(result=r, question=QuestionBase.objects.get(id=pre_q_id))
+                        pre_s.questions.add(q)
+                        r = res
+                        pre_q_id = q_id
+                    else:
+                        r = r + " | " + res
+            q = Question.objects.create(result=r, question=QuestionBase.objects.get(id=pre_q_id))
+            pre_s.questions.add(q)
+            pre_s.save()
+            f.sections.add(pre_s)
+            f.save()
         else:
             raise LogicError("You haven't log in")

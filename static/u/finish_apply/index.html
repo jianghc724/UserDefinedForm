@@ -56,6 +56,17 @@
 
 <script type="text/template" id="tpl-content">
     <div class="container" xmlns="http://www.w3.org/1999/html">
+        {% if status == 0 or status == 1 %}
+        <div class="container" id="container-loading">
+            <img src="/img/loading.gif"><span id="loading-msg">正在载入...</span>
+        </div>
+        {% elif status == 2 %}
+        <div class="container" id="container-result">
+        <span id="result-msg">成功！</span>
+            <br/><br/>
+        <a href="/u/apply_list" class="btn btn-default">回到已填写列表</a>
+        </div>
+        {% else %}
         <div class="pageheader">
             <h1 class="lead">问题列表</h1>
         </div>
@@ -93,6 +104,7 @@
             </div>
             </form>
         </div>
+    {% endif %}
     </div>
 </script>
 
@@ -169,11 +181,13 @@
         return s.toString() + '_' + q.toString();
     }
     var save= function () {
-        var data = {};
+        var data = [];
         var form = $('#question-form');
         $.each(form.serializeArray(), function (i, input) {
-            console.log(input)
-            data[input.name] = input.value;
+            var _data = {};
+            _data["id"] = input.name;
+            _data["value"] = input.value;
+            data.push(_data);
         });
         data.status = 1;
         if (!locals.form_base) {

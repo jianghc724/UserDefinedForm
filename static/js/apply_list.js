@@ -36,29 +36,8 @@ function getTimeStr(dt) {
     return wrapTwoDigit(dt.getHours()) + ':' + wrapTwoDigit(dt.getMinutes());
 }
 
-function isSameYear(d1, d2) {
-    return d1.getFullYear() == d2.getFullYear();
-}
-
-function isSameMonth(d1, d2) {
-    return isSameYear(d1, d2) && (d1.getMonth() == d2.getMonth());
-}
-
-function isSameDay(d1, d2) {
-    return isSameYear(d1, d2) && isSameMonth(d1, d2) && (d1.getDate() == d2.getDate());
-}
-
-function getSmartTimeRange(start_time, end_time) {
-    var result = getChsFullDate(start_time) + ' ' + getChsDay(start_time) + ' ' + getTimeStr(start_time) + ' - ';
-    if (isSameDay(start_time, end_time)) {
-        result += getTimeStr(end_time);
-    } else if (isSameMonth(start_time, end_time)) {
-        result += getChsDate(end_time) + ' ' + getChsDay(end_time) + ' ' + getTimeStr(end_time);
-    } else if (isSameYear(start_time, end_time)) {
-        result += getChsMonthDay(end_time) + ' ' + getChsDay(end_time) + ' ' + getTimeStr(end_time);
-    } else {
-        result += getChsFullDate(end_time) + ' ' + getChsDay(end_time) + ' ' + getTimeStr(end_time);
-    }
+function getTime(time) {
+    var result = getChsFullDate(time) + ' ' + getChsDay(time) + ' ' + getTimeStr(time);
     return result;
 }
 

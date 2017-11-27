@@ -108,24 +108,16 @@ class FormBase(models.Model):
 
 class Question(models.Model):
     question = models.ForeignKey(QuestionBase)
-    questionFinished = models.BooleanField(default=False)
-    result = models.TextField()
-    isChoiceOne = models.BooleanField(default=False)
-    isChoiceTwo = models.BooleanField(default=False)
-    isChoiceThree = models.BooleanField(default=False)
-    isChoiceFour = models.BooleanField(default=False)
+    result = models.TextField(null=True)
 
 
 class Section(models.Model):
-    questionCount = models.IntegerField(default=0)
+    name = models.TextField(null=True)
     questions = models.ManyToManyField(Question)
-    sectionFinished = models.BooleanField(default=False)
 
 
 class Form(models.Model):
-    sectionCount = models.IntegerField(default=0)
     sections = models.ManyToManyField(Section)
-    formFinished = models.IntegerField(default=False)
     rater = models.ForeignKey(User, null=True)
     finishTime = models.DateTimeField(null=True)
 

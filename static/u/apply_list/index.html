@@ -69,8 +69,8 @@
                 <thead>
                 <tr>
                     <th>编号</th>
-                    <th>状态</th>
-                    <th>申请时间</th>
+                    <th>填写人</th>
+                    <th>完成时间</th>
                     <th>操作</th>
                 </tr>
                 </thead>
@@ -81,10 +81,10 @@
                         {{ apply.id }}
                     </td>
                     <td class="td-status">
-                        {{ apply.status }}
+                        {{ apply.rater }}
                     </td>
                     <td class="td-apply_time">
-                        {{ apply.time }}
+                        {{ getTime(apply.time) }}
                     </td>
                     <td class="td-operations">
                     {% if apply.status == 0 %}
