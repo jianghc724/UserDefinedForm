@@ -8,6 +8,8 @@ urlpatterns = [
     url(r'^create/question?$', CreateQuestion.as_view()),
     url(r'^create/section?$', CreateSection.as_view()),
     url(r'^create/form?$', CreateForm.as_view()),
+    url(r'^modify/section?$', ModifySection.as_view()),
+    url(r'^modify/form?$', ModifyForm.as_view()),
     url(r'^create/apply?$', HandleApply.as_view()),
     url(r'^check/apply?$', CheckForm.as_view()),
     url(r'^form/detail?$', CheckFormBase.as_view()),

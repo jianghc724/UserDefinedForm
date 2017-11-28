@@ -149,7 +149,7 @@ class QuestionBaseList(APIView):
             result = []
             for questionBase in questionBases:
                 u_name = User.objects.get(id=questionBase.creator_id).username
-                print (questionBase.createTime)
+                # print(questionBase.createTime)
                 result.append({
                     'id': questionBase.id,
                     'name':questionBase.questionName,
@@ -189,6 +189,52 @@ class CreateSection(APIView):
                 i = i + 1
             s.questionCount = i
             s.questionBases = st
+            s.save()
+        else:
+            raise LogicError("You have no authority to access")
+
+
+class ModifySection(APIView):
+    def get(self):
+        if self.request.user.is_authenticated():
+            self.check_input('id')
+            sectionBase = SectionBase.objects.get(id=self.input['id'])
+            st = sectionBase.questionBases
+            q_list = st.split(',')
+            questionBases = QuestionBase.objects.all()
+            result = []
+            for questionBase in questionBases:
+                menuIndex = -1
+                i = 0
+                flag = False
+                for q in q_list:
+                    i = i + 1
+                    if q == '':
+                        continue
+                    if int(q) == questionBase.id:
+                        menuIndex = i
+                        break
+                result.append({
+                    'id': questionBase.id,
+                    'menuIndex': menuIndex,
+                    'name': questionBase.questionName,
+                })
+            return result
+        else:
+            raise LogicError("You have no authority to access")
+
+    def post(self):
+        if self.request.user.is_authenticated():
+            self.check_input('id', 'name', 'ids')
+            s = SectionBase.objects.get(id=self.input['id'])
+            i = 0
+            st = ''
+            for q in self.input['ids']:
+                st = st + str(q) + ','
+                i = i + 1
+            s.questionCount = i
+            s.questionBases = st
+            s.createTime = datetime.now()
             s.save()
         else:
             raise LogicError("You have no authority to access")
@@ -276,6 +322,54 @@ class CreateForm(APIView):
                 i = i + 1
             f.sectionBases = st
             f.sectionCount = i
+            f.save()
+        else:
+            raise LogicError("You have no authority to access")
+
+
+class ModifyForm(APIView):
+    def get(self):
+        if self.request.user.is_authenticated():
+            self.check_input('id')
+            formBase = FormBase.objects.get(id=self.input['id'])
+            st = formBase.sectionBases
+            s_list = st.split(',')
+            # print(s_list)
+            sectionBases = SectionBase.objects.all()
+            result = []
+            for sectionBase in sectionBases:
+                menuIndex = -1
+                i = 0
+                flag = False
+                for s in s_list:
+                    i = i + 1
+                    if s == '':
+                        continue
+                    if int(s) == sectionBase.id:
+                        # print(int(s))
+                        menuIndex = i
+                        break
+                result.append({
+                    'id': sectionBase.id,
+                    'menuIndex': menuIndex,
+                    'name': sectionBase.name,
+                })
+            return result
+        else:
+            raise LogicError("You have no authority to access")
+
+    def post(self):
+        if self.request.user.is_authenticated():
+            self.check_input('id', 'name', 'ids')
+            f = FormBase.objects.get(id=self.input['id'])
+            i = 0
+            st = ''
+            for s in self.input['ids']:
+                st = st + str(s) + ','
+                i = i + 1
+            f.sectionBases = st
+            f.sectionCount = i
+            f.createTime = datetime.now()
             f.save()
         else:
             raise LogicError("You have no authority to access")
@@ -445,14 +539,15 @@ class FinishForm(APIView):
 
     def post(self):
         if self.request.user.is_authenticated():
-            f = Form.objects.create(finishTime=datetime.now(), rater=self.request.user)
+            self.check_input('id', 'question')
+            f = Form.objects.create(formId=self.input['id'], finishTime=datetime.now(), rater=self.request.user)
             pre_s_id = -1
             pre_q_id = -1
             pre_s = None
             s_q = ""
             f_s = ""
             r = ""
-            for question in self.input:
+            for question in self.input['question']:
                 st = question['id']
                 res = question['value']
                 s_id = int(st.split('_')[0])

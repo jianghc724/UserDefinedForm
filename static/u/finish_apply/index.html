@@ -218,6 +218,7 @@
     var save= function () {
         var counter = 0;
         var data = [];
+        var res = [];
         var flag = false;
         var form = $('#question-form');
         $.each(form.serializeArray(), function (i, input) {
@@ -235,7 +236,7 @@
                 }
             }
             _data["value"] = input.value;
-            data.push(_data);
+            res.push(_data);
         });
         if (flag) {
             for (var i = 0; i < locals.question_id.length; i++) {
@@ -250,6 +251,8 @@
             }
             return;
         }
+        data['id'] = urlParam.id;
+        data['question'] = res;
         data.status = 1;
         if (!locals.form_base) {
             locals.form_base = {};

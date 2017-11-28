@@ -117,6 +117,7 @@ class Section(models.Model):
 
 
 class Form(models.Model):
+    formId = models.IntegerField(default=-1)
     sections = models.CharField(null=True, max_length=100)
     rater = models.ForeignKey(User, null=True)
     finishTime = models.DateTimeField(null=True)
