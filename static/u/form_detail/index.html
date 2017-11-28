@@ -11,13 +11,13 @@
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/css/form_detail.css" />
 
-    <title>表单详情</title>
+    <title>量表详情</title>
 </head>
 <body>
     <header class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="container">
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-targetid=".navbar-collapse">
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
@@ -40,14 +40,14 @@
     </footer>
 
 <script type="text/template" id="tpl-nav-title">
-表单管理系统
+外科医师临床操作能力观察评估记录系统
 </script>
 
 <script type="text/template" id="tpl-nav-li">
-    <li class="active"><a class="btn-link" href="/u/apply_list">表单列表</a></li>
-    <li class="active"><a class="btn-link" href="/u/question_list">问题模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/section_list">部分模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/form_list">表单模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/apply_list">量表列表</a></li>
+    <li class="active"><a class="btn-link" href="/u/question_list">观察项模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/section_list">章节模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">量表模板</a></li>
 </script>
 
 <script type="text/template" id="tpl-nav-li-right">
@@ -57,7 +57,7 @@
 <script type="text/template" id="tpl-content">
     <div class="container" xmlns="http://www.w3.org/1999/html">
         <div class="pageheader">
-            <h1 class="lead">问题列表</h1>
+            <h1 class="lead">观察项列表</h1>
         </div>
 
         <div class="panel panel-default">
@@ -70,34 +70,34 @@
                         <div class="col-sm-10">
                             {% if question.question_type == 1 %}
                                 {% for choice in question.choices %}
-                                    <input type="radio" name="{{ question.id }}" autofocus value="{{ choice }}">{{ choice }}
+                                    <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="{{ choice }}">{{ choice }}
                                 {% endfor %}
                             {% else %}
                                 {% if question.question_type == 2 %}
                                     {% for choice in question.choices %}
-                                        <input type="checkbox" name="{{ question.id }}" autofocus value="{{ choice }}">{{ choice }}
+                                        <input type="checkbox" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="{{ choice }}">{{ choice }}
                                     {% endfor %}
                                 {% else %}
                                     {% if question.question_type == 3 %}
-                                        <input type="text" maxlength="26" name="{{ question.id }}" autofocus>
+                                        <input type="text" maxlength="26" name="{{ getid(question.section_id, question.question_id) }}" autofocus>
                                     {% else %}
                                         {% if question.question_type == 4 %}
-                                            <input type="radio" name="{{ question.id }}" autofocus value="1/10">1
-                                            <input type="radio" name="{{ question.id }}" autofocus value="2/10">2
-                                            <input type="radio" name="{{ question.id }}" autofocus value="3/10">3
-                                            <input type="radio" name="{{ question.id }}" autofocus value="4/10">4
-                                            <input type="radio" name="{{ question.id }}" autofocus value="5/10">5
-                                            <input type="radio" name="{{ question.id }}" autofocus value="6/10">6
-                                            <input type="radio" name="{{ question.id }}" autofocus value="7/10">7
-                                            <input type="radio" name="{{ question.id }}" autofocus value="8/10">8
-                                            <input type="radio" name="{{ question.id }}" autofocus value="9/10">9
-                                            <input type="radio" name="{{ question.id }}" autofocus value="10/10">10
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="1/10">1
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="2/10">2
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="3/10">3
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="4/10">4
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="5/10">5
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="6/10">6
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="7/10">7
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="8/10">8
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="9/10">9
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="10/10">10
                                         {% else %}
-                                            <input type="radio" name="{{ question.id }}" autofocus value="1-5分钟">1-5分钟
-                                            <input type="radio" name="{{ question.id }}" autofocus value="5-10分钟">5-10分钟
-                                            <input type="radio" name="{{ question.id }}" autofocus value="10-30分钟">10-30分钟
-                                            <input type="radio" name="{{ question.id }}" autofocus value="30-60分钟">30-60分钟
-                                            <input type="radio" name="{{ question.id }}" autofocus value="60分钟以上">60分钟以上
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="1-5分钟">1-5分钟
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="5-10分钟">5-10分钟
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="10-30分钟">10-30分钟
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="30-60分钟">30-60分钟
+                                            <input type="radio" name="{{ getid(question.section_id, question.question_id) }}" autofocus value="60分钟以上">60分钟以上
                                         {% endif %}
                                     {% endif %}
                                 {% endif %}
@@ -166,14 +166,12 @@
         swig.setDefaultTZOffset(new Date().getTimezoneOffset());
         render();
         loginRequired(function () {
-            if (!urlParam.create) {
-                api.get('/api/u/form/detail', {id: urlParam.id}, function (data) {
-                    locals.status = -1;
-                    data.id = parseInt(urlParam.id);
-                    locals.form_base = data;
-                    render();
-                }, dftFail);
-            }
+            api.get('/api/u/form/detail', {id: urlParam.id}, function (data) {
+                locals.status = -1;
+                data.id = parseInt(urlParam.id);
+                locals.form_base = data;
+                render();
+            }, dftFail);
         });
     });
     var backToForm = function () {

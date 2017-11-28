@@ -11,7 +11,7 @@
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/css/modify_form.css" />
 
-    <title>设置表单模板</title>
+    <title>设置量表模板</title>
 </head>
 <body>
     <header class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -40,14 +40,14 @@
     </footer>
 
 <script type="text/template" id="tpl-nav-title">
-表单管理系统
+外科医师临床操作能力观察评估记录系统
 </script>
 
 <script type="text/template" id="tpl-nav-li">
-    <li class="active"><a class="btn-link" href="/u/apply_list">表单列表</a></li>
-    <li class="active"><a class="btn-link" href="/u/question_list">问题模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/section_list">部分模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/form_list">表单模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/apply_list">量表列表</a></li>
+    <li class="active"><a class="btn-link" href="/u/question_list">观察项模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/section_list">章节模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">量表模板</a></li>
 </script>
 
 <script type="text/template" id="tpl-nav-li-right">
@@ -64,12 +64,12 @@
         <div class="container" id="container-result">
         <span id="result-msg">成功！</span>
             <br/><br/>
-        <a href="/u/form_list" class="btn btn-default">回到表单列表</a>
+        <a href="/u/form_list" class="btn btn-default">回到量表列表</a>
         </div>
         {% else %}
         <div class="container" id="container-main">
         <div class="pageheader">
-            <h1 class="lead">设置表单模板</h1>
+            <h1 class="lead">设置量表模板</h1>
         </div>
         <div class="forms">
             <label for="f-name" class="col-sm-6 control-label">模板名</label>
@@ -81,7 +81,7 @@
         <br/>
         <div class="col-xs-4">
             <div class="panel panel-default">
-                <div class="panel-heading">现在设置的部分：</div>
+                <div class="panel-heading">现在设置的章节：</div>
                 <ul class="list-group" id="current-menus">
                 {% for menu in usedSections %}
                     <li class="list-group-item">
@@ -112,7 +112,7 @@
         <div class="col-xs-1"></div>
         <div class="col-xs-5" id="alter-activities">
             <div class="panel panel-default">
-                <div class="panel-heading">现在可加入的部分：</div>
+                <div class="panel-heading">现在可加入的章节：</div>
                 <ul class="list-group" id="current-alters">
                 {% for menu in unusedSections %}
                     <li class="list-group-item">

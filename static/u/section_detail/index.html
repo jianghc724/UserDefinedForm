@@ -11,13 +11,13 @@
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/css/section_detail.css" />
 
-    <title>部分详情</title>
+    <title>章节详情</title>
 </head>
 <body>
     <header class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="container">
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-targetid=".navbar-collapse">
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
@@ -40,14 +40,14 @@
     </footer>
 
 <script type="text/template" id="tpl-nav-title">
-表单管理系统
+外科医师临床操作能力观察评估记录系统
 </script>
 
 <script type="text/template" id="tpl-nav-li">
-    <li class="active"><a class="btn-link" href="/u/apply_list">表单列表</a></li>
-    <li class="active"><a class="btn-link" href="/u/question_list">问题模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/section_list">部分模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/form_list">表单模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/apply_list">量表列表</a></li>
+    <li class="active"><a class="btn-link" href="/u/question_list">观察项模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/section_list">章节模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">量表模板</a></li>
 </script>
 
 <script type="text/template" id="tpl-nav-li-right">
@@ -57,7 +57,7 @@
 <script type="text/template" id="tpl-content">
     <div class="container" xmlns="http://www.w3.org/1999/html">
         <div class="pageheader">
-            <h1 class="lead">问题列表</h1>
+            <h1 class="lead">观察项列表</h1>
         </div>
 
         <div class="panel panel-default">
@@ -164,14 +164,12 @@
         swig.setDefaultTZOffset(new Date().getTimezoneOffset());
         render();
         loginRequired(function () {
-            if (!urlParam.create) {
-                api.get('/api/u/section/detail', {id: urlParam.id}, function (data) {
-                    locals.status = -1;
-                    data.id = parseInt(urlParam.id);
-                    locals.section_base = data;
-                    render();
-                }, dftFail);
-            }
+            api.get('/api/u/section/detail', {id: urlParam.id}, function (data) {
+                locals.status = -1;
+                data.id = parseInt(urlParam.id);
+                locals.section_base = data;
+                render();
+            }, dftFail);
         });
     });
     var backToForm = function () {
@@ -179,9 +177,6 @@
         locals.processResult = '';
         render();
     };
-    var getid = function(s, q){
-        return s.toString() + '_' + q.toString();
-    }
 </script>
 </body>
 </html>
