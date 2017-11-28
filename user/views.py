@@ -82,11 +82,31 @@ class CreateQuestion(APIView):
             if self.input['type'] == 'single' or self.input['type'] == 'multiple':
                 self.check_input('choiceOne', 'choiceTwo', 'choiceThree', 'choiceFour')
             if self.input['type'] == 'single':
-                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=1, questionInfo=self.input['info'], createTime = datetime.now(), creator = self.request.user, choiceOne = self.input['choiceOne'], choiceTwo = self.input['choiceTwo'], choiceThree = self.input['choiceThree'], choiceFour = self.input['choiceFour'])
+                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=1,
+                                                questionInfo=self.input['info'], createTime=datetime.now(),
+                                                creator=self.request.user, choiceOne=self.input['choiceOne'],
+                                                choiceTwo=self.input['choiceTwo'],
+                                                choiceThree=self.input['choiceThree'],
+                                                choiceFour=self.input['choiceFour'])
             elif self.input['type'] == 'multiple':
-                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=2, questionInfo=self.input['info'], createTime = datetime.now(), creator = self.request.user, choiceOne = self.input['choiceOne'], choiceTwo = self.input['choiceTwo'], choiceThree = self.input['choiceThree'], choiceFour = self.input['choiceFour'])
+                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=2,
+                                                questionInfo=self.input['info'], createTime=datetime.now(),
+                                                creator=self.request.user, choiceOne=self.input['choiceOne'],
+                                                choiceTwo=self.input['choiceTwo'],
+                                                choiceThree=self.input['choiceThree'],
+                                                choiceFour=self.input['choiceFour'])
             elif self.input['type'] == 'textfilling':
-                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=3, questionInfo=self.input['info'], createTime = datetime.now(), creator = self.request.user)
+                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=3,
+                                                questionInfo=self.input['info'], createTime=datetime.now(),
+                                                creator=self.request.user)
+            elif self.input['type'] == 'rating':
+                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=4,
+                                                questionInfo=self.input['info'], createTime=datetime.now(),
+                                                creator=self.request.user)
+            elif self.input['type'] == 'timing':
+                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=5,
+                                                questionInfo=self.input['info'], createTime=datetime.now(),
+                                                creator=self.request.user)
             else:
                 raise InputError("No such type")
             q.save()
@@ -163,10 +183,12 @@ class CreateSection(APIView):
             self.check_input('name', 'id')
             s = SectionBase.objects.create(name=self.input['name'], creator=self.request.user, createTime=datetime.now())
             i = 0
+            st = ''
             for q in self.input['id']:
-                s.questionBases.add(QuestionBase.objects.get(id=q))
+                st = st + str(q) + ','
                 i = i + 1
             s.questionCount = i
+            s.questionBases = st
             s.save()
         else:
             raise LogicError("You have no authority to access")
@@ -179,7 +201,12 @@ class CheckSectionBase(APIView):
             section = SectionBase.objects.get(id=self.input['id'])
             if section:
                 result = []
-                for question in section.questionBases.all():
+                st = section.questionBases
+                int_list = st.split(',')
+                for s in int_list:
+                    if s == '':
+                        continue
+                    question = QuestionBase.objects.get(id=int(s))
                     choice = []
                     choice.append(question.choiceOne)
                     choice.append(question.choiceTwo)
@@ -243,9 +270,11 @@ class CreateForm(APIView):
             self.check_input('name', 'id')
             f = FormBase.objects.create(name=self.input['name'], creator=self.request.user, createTime=datetime.now())
             i = 0
+            st = ''
             for s in self.input['id']:
-                f.sectionBases.add(SectionBase.objects.get(id=s))
+                st = st + str(s) + ','
                 i = i + 1
+            f.sectionBases = st
             f.sectionCount = i
             f.save()
         else:
@@ -259,9 +288,19 @@ class CheckFormBase(APIView):
             form = FormBase.objects.get(id=self.input['id'])
             if form:
                 result = []
-                for section in form.sectionBases.all():
+                s_st = form.sectionBases
+                s_list = s_st.split(',')
+                for _section in s_list:
+                    if _section == '':
+                        continue
+                    section = SectionBase.objects.get(id=int(_section))
                     _result = []
-                    for question in section.questionBases.all():
+                    q_st = section.questionBases
+                    q_list = q_st.split(',')
+                    for _question in q_list:
+                        if _question == '':
+                            continue
+                        question = QuestionBase.objects.get(id=int(_question))
                         choice = []
                         choice.append(question.choiceOne)
                         choice.append(question.choiceTwo)
@@ -336,9 +375,19 @@ class CheckForm(APIView):
             form = Form.objects.get(id=self.input['id'])
             if form:
                 result = []
-                for section in form.sections.all():
+                s_st = form.sections
+                s_list = s_st.split(',')
+                for _section in s_list:
+                    if _section == '':
+                        continue
+                    section = Section.objects.get(id=int(_section))
                     _result = []
-                    for question in section.questions.all():
+                    q_st = section.questions
+                    q_list = q_st.split(',')
+                    for _question in q_list:
+                        if _question == '':
+                            continue
+                        question = Question.objects.get(id=int(_question))
                         _result.append({
                             'section_id': section.id,
                             'question_id': question.id,
@@ -362,9 +411,19 @@ class FinishForm(APIView):
             self.check_input('id')
             fBase = FormBase.objects.get(id=self.input['id'])
             result = []
-            for sBase in fBase.sectionBases.all():
+            s_st = fBase.sectionBases
+            s_list = s_st.split(',')
+            for _section in s_list:
+                if _section == '':
+                    continue
+                sBase = SectionBase.objects.get(id=int(_section))
                 _result = []
-                for qBase in sBase.questionBases.all():
+                q_st = sBase.questionBases
+                q_list = q_st.split(',')
+                for _question in q_list:
+                    if _question == '':
+                        continue
+                    qBase = QuestionBase.objects.get(id=int(_question))
                     choice = []
                     choice.append(qBase.choiceOne)
                     choice.append(qBase.choiceTwo)
@@ -390,20 +449,22 @@ class FinishForm(APIView):
             pre_s_id = -1
             pre_q_id = -1
             pre_s = None
+            s_q = ""
+            f_s = ""
             r = ""
             for question in self.input:
-                str = question['id']
+                st = question['id']
                 res = question['value']
-                s_id = int(str.split('_')[0])
-                q_id = int(str.split('_')[1])
+                s_id = int(st.split('_')[0])
+                q_id = int(st.split('_')[1])
                 if not s_id == pre_s_id:
                     if pre_s is not None:
                         q = Question.objects.create(result=r, question=QuestionBase.objects.get(id=pre_q_id))
-                        pre_s.questions.add(q)
+                        q.save()
+                        s_q = s_q + str(pre_q_id) + ','
+                        pre_s.questions = s_q
                         pre_s.save()
-                        f.sections.add(pre_s)
-                        r = ""
-                        pre_q_id = -1
+                        f_s = f_s + str(pre_s_id) + ','
                     pre_s = Section.objects.create(name=SectionBase.objects.get(id=s_id).name)
                     pre_s_id = s_id
                     pre_q_id = q_id
@@ -411,15 +472,17 @@ class FinishForm(APIView):
                 else:
                     if not pre_q_id == q_id:
                         q = Question.objects.create(result=r, question=QuestionBase.objects.get(id=pre_q_id))
-                        pre_s.questions.add(q)
+                        s_q = s_q + str(pre_q_id) + ','
                         r = res
                         pre_q_id = q_id
                     else:
                         r = r + " | " + res
             q = Question.objects.create(result=r, question=QuestionBase.objects.get(id=pre_q_id))
-            pre_s.questions.add(q)
+            s_q = s_q + str(pre_q_id) + ','
+            pre_s.questions = s_q
             pre_s.save()
-            f.sections.add(pre_s)
+            f_s = f_s + str(pre_s_id) + ','
+            f.sections = f_s
             f.save()
         else:
             raise LogicError("You haven't log in")

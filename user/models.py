@@ -93,7 +93,7 @@ class QuestionBase(models.Model):
 class SectionBase(models.Model):
     name = models.TextField(null=True)
     questionCount = models.IntegerField(default=0)
-    questionBases = models.ManyToManyField(QuestionBase)
+    questionBases = models.CharField(null=True, max_length=100)
     creator = models.ForeignKey(User, null=True)
     createTime = models.DateTimeField(null=True)
 
@@ -101,7 +101,7 @@ class SectionBase(models.Model):
 class FormBase(models.Model):
     name = models.TextField(null=True)
     sectionCount = models.IntegerField(default=0)
-    sectionBases = models.ManyToManyField(SectionBase)
+    sectionBases = models.CharField(null=True, max_length=100)
     creator = models.ForeignKey(User, null=True)
     createTime = models.DateTimeField(null=True)
 
@@ -113,11 +113,11 @@ class Question(models.Model):
 
 class Section(models.Model):
     name = models.TextField(null=True)
-    questions = models.ManyToManyField(Question)
+    questions = models.CharField(null=True, max_length=100)
 
 
 class Form(models.Model):
-    sections = models.ManyToManyField(Section)
+    sections = models.CharField(null=True, max_length=100)
     rater = models.ForeignKey(User, null=True)
     finishTime = models.DateTimeField(null=True)
 

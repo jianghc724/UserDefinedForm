@@ -69,15 +69,36 @@
                         <div class="col-sm-10">
                             {% if question.question_type == 1 %}
                                 {% for choice in question.choices %}
-                                    <input type="radio" id="{{ question.question_id }}" name="{{ question.question_id }}" autofocus value="{{ choice }}">{{ choice }}
+                                    <input type="radio" name="{{ question.id }}" autofocus value="{{ choice }}">{{ choice }}
                                 {% endfor %}
                             {% else %}
                                 {% if question.question_type == 2 %}
                                     {% for choice in question.choices %}
-                                        <input type="checkbox" id="{{ question.question_id }}" name="{{ question.question_id }}" autofocus value="{{ choice }}">{{ choice }}
+                                        <input type="checkbox" name="{{ question.id }}" autofocus value="{{ choice }}">{{ choice }}
                                     {% endfor %}
                                 {% else %}
-                                    <input type="text" maxlength="26" id="{{ question.question_id }}" name="{{ question.question_id }}" autofocus>
+                                    {% if question.question_type == 3 %}
+                                        <input type="text" maxlength="26" name="{{ question.id }}" autofocus>
+                                    {% else %}
+                                        {% if question.question_type == 4 %}
+                                            <input type="radio" name="{{ question.id }}" autofocus value="1/10">1
+                                            <input type="radio" name="{{ question.id }}" autofocus value="2/10">2
+                                            <input type="radio" name="{{ question.id }}" autofocus value="3/10">3
+                                            <input type="radio" name="{{ question.id }}" autofocus value="4/10">4
+                                            <input type="radio" name="{{ question.id }}" autofocus value="5/10">5
+                                            <input type="radio" name="{{ question.id }}" autofocus value="6/10">6
+                                            <input type="radio" name="{{ question.id }}" autofocus value="7/10">7
+                                            <input type="radio" name="{{ question.id }}" autofocus value="8/10">8
+                                            <input type="radio" name="{{ question.id }}" autofocus value="9/10">9
+                                            <input type="radio" name="{{ question.id }}" autofocus value="10/10">10
+                                        {% else %}
+                                            <input type="radio" name="{{ question.id }}" autofocus value="1-5分钟">1-5分钟
+                                            <input type="radio" name="{{ question.id }}" autofocus value="5-10分钟">5-10分钟
+                                            <input type="radio" name="{{ question.id }}" autofocus value="10-30分钟">10-30分钟
+                                            <input type="radio" name="{{ question.id }}" autofocus value="30-60分钟">30-60分钟
+                                            <input type="radio" name="{{ question.id }}" autofocus value="60分钟以上">60分钟以上
+                                        {% endif %}
+                                    {% endif %}
                                 {% endif %}
                             {% endif %}
                         </div>
