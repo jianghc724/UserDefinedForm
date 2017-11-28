@@ -49,8 +49,10 @@ class FormList(APIView):
                 result = []
                 for form in forms:
                     u_name = User.objects.get(id=form.rater_id).username
+                    b_name = FormBase.objects.get(id=form.formId).name
                     result.append({
                         'id': form.id,
+                        'name': b_name,
                         'time': form.finishTime.timestamp(),
                         'rater':u_name,
                     })

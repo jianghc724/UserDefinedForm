@@ -69,6 +69,7 @@
                 <thead>
                 <tr>
                     <th>编号</th>
+                    <th>使用模板名</th>
                     <th>填写人</th>
                     <th>完成时间</th>
                     <th>操作</th>
@@ -77,8 +78,11 @@
                 <tbody id="tbody-applies">
                 {% for apply in applies %}
                 <tr id="act-{{ apply.id }}">
-                    <td class="td-name">
+                    <td class="td-id">
                         {{ apply.id }}
+                    </td>
+                    <td class="td-name">
+                        {{ apply.name }}
                     </td>
                     <td class="td-status">
                         {{ apply.rater }}
