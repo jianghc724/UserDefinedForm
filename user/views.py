@@ -143,36 +143,16 @@ class CreateApply(APIView):
             raise LogicError("You haven't log in")
 
 
-class CheckForm(APIView):
+class CreatePAT(APIView):
     def get(self):
         if self.request.user.is_authenticated():
-            self.check_input('id')
-            form = Form.objects.get(id=self.input['id'])
-            if form:
-                result = []
-                s_st = form.sections
-                s_list = s_st.split(',')
-                for _section in s_list:
-                    if _section == '':
-                        continue
-                    section = Section.objects.get(id=int(_section))
-                    _result = []
-                    q_st = section.questions
-                    q_list = q_st.split(',')
-                    for _question in q_list:
-                        if _question == '':
-                            continue
-                        question = Question.objects.get(id=int(_question))
-                        _result.append({
-                            'section_id': section.id,
-                            'question_id': question.id,
-                            'question_info': question.question.questionInfo,
-                            'result': question.result,
-                        })
-                    result.append(_result)
-                return result
-            else:
-                raise LogicError("No such Form")
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            result = {
+                'user_status': u.authority,
+            }
+            return result
         else:
             raise LogicError("You haven't log in")
 
@@ -180,88 +160,72 @@ class CheckForm(APIView):
         pass
 
 
-class FinishForm(APIView):
+class CreateOOT(APIView):
     def get(self):
         if self.request.user.is_authenticated():
-            self.check_input('id')
-            fBase = FormBase.objects.get(id=self.input['id'])
-            result = []
-            s_st = fBase.sectionBases
-            s_list = s_st.split(',')
-            for _section in s_list:
-                if _section == '':
-                    continue
-                sBase = SectionBase.objects.get(id=int(_section))
-                _result = []
-                q_st = sBase.questionBases
-                q_list = q_st.split(',')
-                for _question in q_list:
-                    if _question == '':
-                        continue
-                    qBase = QuestionBase.objects.get(id=int(_question))
-                    choice = []
-                    choice.append(qBase.choiceOne)
-                    choice.append(qBase.choiceTwo)
-                    if not qBase.choiceThree == '':
-                        choice.append(qBase.choiceThree)
-                    if not qBase.choiceFour == '':
-                        choice.append(qBase.choiceFour)
-                    _result.append({
-                        'section_id': sBase.id,
-                        'question_id': qBase.id,
-                        'question_type': qBase.questionType,
-                        'question_info': qBase.questionInfo,
-                        'choices': choice,
-                    })
-                result.append(_result)
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            result = {
+                'user_status': u.authority,
+            }
             return result
         else:
             raise LogicError("You haven't log in")
 
     def post(self):
+        pass
+
+
+class CreateDOPS(APIView):
+    def get(self):
         if self.request.user.is_authenticated():
-            self.check_input('id', 'question')
-            f = Form.objects.create(formId=self.input['id'], finishTime=datetime.now(), rater=self.request.user)
-            pre_s_id = -1
-            pre_q_id = -1
-            pre_s = None
-            s_q = ""
-            f_s = ""
-            r = ""
-            for question in self.input['question']:
-                st = question['id']
-                res = question['value']
-                s_id = int(st.split('_')[0])
-                q_id = int(st.split('_')[1])
-                if not s_id == pre_s_id:
-                    if pre_s is not None:
-                        q = Question.objects.create(result=r, question=QuestionBase.objects.get(id=pre_q_id))
-                        q.save()
-                        s_q = s_q + str(pre_q_id) + ','
-                        pre_s.questions = s_q
-                        pre_s.save()
-                        f_s = f_s + str(pre_s_id) + ','
-                    pre_s = Section.objects.create(name=SectionBase.objects.get(id=s_id).name)
-                    pre_s_id = s_id
-                    pre_q_id = q_id
-                    r = res
-                else:
-                    if not pre_q_id == q_id:
-                        q = Question.objects.create(result=r, question=QuestionBase.objects.get(id=pre_q_id))
-                        s_q = s_q + str(pre_q_id) + ','
-                        r = res
-                        pre_q_id = q_id
-                    else:
-                        r = r + " | " + res
-            q = Question.objects.create(result=r, question=QuestionBase.objects.get(id=pre_q_id))
-            s_q = s_q + str(pre_q_id) + ','
-            pre_s.questions = s_q
-            pre_s.save()
-            f_s = f_s + str(pre_s_id) + ','
-            f.sections = f_s
-            f.save()
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            result = {
+                'user_status': u.authority,
+            }
+            return result
         else:
             raise LogicError("You haven't log in")
+
+    def post(self):
+        pass
+
+
+class CreateCEX(APIView):
+    def get(self):
+        if self.request.user.is_authenticated():
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            result = {
+                'user_status': u.authority,
+            }
+            return result
+        else:
+            raise LogicError("You haven't log in")
+
+    def post(self):
+        pass
+
+
+class CreateCBD(APIView):
+    def get(self):
+        if self.request.user.is_authenticated():
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            result = {
+                'user_status': u.authority,
+            }
+            return result
+        else:
+            raise LogicError("You haven't log in")
+
+    def post(self):
+        pass
 
 
 class PATForm(APIView):
@@ -532,7 +496,38 @@ class CBDForm(APIView):
 
 class CreateUser(APIView):
     def get(self):
-        pass
+        if self.request.user.is_authenticated():
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            result = {
+                'user_status': u.authority,
+            }
+            return result
+        else:
+            raise LogicError("You haven't log in")
 
     def post(self):
-        pass
+        if self.request.user.is_authenticated():
+            self.check_input('user')
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            elif u.authority == 2:
+                for info in self.input['user']:
+                    _nu = User.objects.create(username=info['username'], password=info['password'])
+                    _nu.save()
+                    nu = UserInfo.objects.create(user=_nu, name=info['name'], license=info['license'],
+                                                 grade=info['grade'], authority=3, organization=u.organization)
+                    nu.save()
+            elif u.authority == 1:
+                for info in self.input['user']:
+                    _nu = User.objects.create(username=info['username'], password=info['password'])
+                    _nu.save()
+                    nu = UserInfo.objects.create(user=_nu, name=info['name'], license=info['license'],
+                                                 grade=info['grade'], authority=2, organization=info['organization'])
+                    nu.save()
+            else:
+                raise LogicError("No such authority")
+        else:
+            raise LogicError("You haven't log in")
