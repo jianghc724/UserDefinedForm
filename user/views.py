@@ -40,33 +40,33 @@ class UserLogout(APIView):
             raise LogicError("You haven't log in")
 
 
-class FormList(APIView):
+class ApplyList(APIView):
     def get(self):
         if self.request.user.is_authenticated():
-            user = self.request.user
-            if user.is_superuser:
-                forms = Form.objects.all()
-                result = []
-                for form in forms:
-                    u_name = User.objects.get(id=form.rater_id).username
-                    b_name = FormBase.objects.get(id=form.formId).name
-                    result.append({
-                        'id': form.id,
-                        'name': b_name,
-                        'time': form.finishTime.timestamp(),
-                        'rater':u_name,
-                    })
-                return result
+            u_id = self.request.user.id
+            u = UserInfo.objects.get(user_id=u_id)
+            apply = []
+            if u.authority == 1:
+                _a = Apply.objects.filter(isHandled=False)
+            elif u.authority == 2:
+                _a = Apply.objects.filter(organization=u.organization, isHandled=False)
+            elif u.authority == 3:
+                _a = Apply.objects.filter(organization=u.id, isHandled=False)
             else:
-                forms = Form.objects.filter(rater=user)
-                result = []
-                for form in forms:
-                    u_name = User.objects.get(id=form.rater_id).username
-                    result.append({
-                        'id': form.id,
-                        'time': form.finishTimetimestamp(),
-                        'rater': u_name,
-                    })
+                raise LogicError("unknown authority")
+            for a in _a:
+                t_name = User.objects.get(id=a.trainee).username
+                apply.append({
+                    'id': a.id,
+                    'apply_time': a.applyTime.timestamp(),
+                    'trainee': t_name,
+                    'form_base': a.formBaseId,
+                })
+            result = {
+                'user_status': u.authority,
+                'apply': apply,
+            }
+            return result
         else:
             raise LogicError("You haven't log in")
 
@@ -74,394 +74,73 @@ class FormList(APIView):
         pass
 
 
-class CreateQuestion(APIView):
+class FormList(APIView):
     def get(self):
-        pass
-
-    def post(self):
         if self.request.user.is_authenticated():
-            self.check_input('type', 'info', 'name')
-            if self.input['type'] == 'single' or self.input['type'] == 'multiple':
-                self.check_input('choiceOne', 'choiceTwo', 'choiceThree', 'choiceFour')
-            if self.input['type'] == 'single':
-                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=1,
-                                                questionInfo=self.input['info'], createTime=datetime.now(),
-                                                creator=self.request.user, choiceOne=self.input['choiceOne'],
-                                                choiceTwo=self.input['choiceTwo'],
-                                                choiceThree=self.input['choiceThree'],
-                                                choiceFour=self.input['choiceFour'])
-            elif self.input['type'] == 'multiple':
-                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=2,
-                                                questionInfo=self.input['info'], createTime=datetime.now(),
-                                                creator=self.request.user, choiceOne=self.input['choiceOne'],
-                                                choiceTwo=self.input['choiceTwo'],
-                                                choiceThree=self.input['choiceThree'],
-                                                choiceFour=self.input['choiceFour'])
-            elif self.input['type'] == 'textfilling':
-                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=3,
-                                                questionInfo=self.input['info'], createTime=datetime.now(),
-                                                creator=self.request.user)
-            elif self.input['type'] == 'rating':
-                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=4,
-                                                questionInfo=self.input['info'], createTime=datetime.now(),
-                                                creator=self.request.user)
-            elif self.input['type'] == 'timing':
-                q = QuestionBase.objects.create(questionName=self.input['name'], questionType=5,
-                                                questionInfo=self.input['info'], createTime=datetime.now(),
-                                                creator=self.request.user)
+            u_id = self.request.user.id
+            u = UserInfo.objects.get(user_id=u_id)
+            apply = []
+            if u.authority == 1:
+                _a = Apply.objects.filter(isHandled=True)
+            elif u.authority == 2:
+                _a = Apply.objects.filter(organization=u.organization, isHandled=True)
+            elif u.authority == 3:
+                _a = Apply.objects.filter(organization=u.id, isHandled=True)
             else:
-                raise InputError("No such type")
-            q.save()
+                raise LogicError("unknown authority")
+            for a in _a:
+                t_name = User.objects.get(id=a.trainee).username
+                r_name = User.objects.get(id=a.rater).username
+                apply.append({
+                    'id': a.id,
+                    'apply_time': a.applyTime.timestamp(),
+                    'finish_time': a.finishTime.timestamp(),
+                    'trainee': t_name,
+                    'rater': r_name,
+                    'form_base': a.formBaseId,
+                    'form_id':a.formId,
+                })
+            result = {
+                'user_status': u.authority,
+                'apply': apply,
+            }
+            return result
         else:
-            raise LogicError("You have no authority to access")
+            raise LogicError("You haven't log in")
+
+    def post(self):
+        pass
 
 
-class CheckQuestionBase(APIView):
+class CreateApply(APIView):
     def get(self):
+        pass
+
+    def post(self):
         if self.request.user.is_authenticated():
-            self.check_input('id')
-            question = QuestionBase.objects.get(id=self.input['id'])
-            if question:
-                choice = []
-                choice.append(question.choiceOne)
-                choice.append(question.choiceTwo)
-                if not question.choiceThree == '':
-                    choice.append(question.choiceThree)
-                if not question.choiceFour == '':
-                    choice.append(question.choiceFour)
-                result = {
-                    'question_type': question.questionType,
-                    'question_info': question.questionInfo,
-                    'choices': choice,
-                }
-                return result
+            self.check_input('type')
+            t = self.input['type']
+            t_id = self.request.user.id
+            u = UserInfo.objects.get(user_id=t_id)
+            if t == 'cbd':
+                a = Apply.objects.create(trainee=t_id, organization=u.organization, formBaseId=1,
+                                         applyTime=datetime.now())
+            elif t == 'cex':
+                a = Apply.objects.create(trainee=t_id, organization=u.organization, formBaseId=2,
+                                         applyTime=datetime.now())
+            elif t == 'dops':
+                a = Apply.objects.create(trainee=t_id, organization=u.organization, formBaseId=3,
+                                         applyTime=datetime.now())
+            elif t == 'oot':
+                a = Apply.objects.create(trainee=t_id, organization=u.organization, formBaseId=4,
+                                         applyTime=datetime.now())
+            elif t == 'pat':
+                a = Apply.objects.create(trainee=t_id, organization=u.organization, formBaseId=5,
+                                         applyTime=datetime.now())
             else:
-                raise LogicError('No such question base')
+                raise LogicError("No such type")
         else:
-            raise LogicError("You have no authority to access")
-
-    def post(self):
-        pass
-
-
-class QuestionBaseList(APIView):
-    def get(self):
-        if self.request.user.is_authenticated():
-            questionBases = QuestionBase.objects.all()
-            result = []
-            for questionBase in questionBases:
-                u_name = User.objects.get(id=questionBase.creator_id).username
-                # print(questionBase.createTime)
-                result.append({
-                    'id': questionBase.id,
-                    'name':questionBase.questionName,
-                    'creator': u_name,
-                    'time':questionBase.createTime.timestamp(),
-                })
-            return result
-        else:
-            raise LogicError("You have no authority to access")
-
-    def post(self):
-        pass
-
-
-class CreateSection(APIView):
-    def get(self):
-        if self.request.user.is_authenticated():
-            questionBases = QuestionBase.objects.all()
-            result = []
-            for questionBase in questionBases:
-                result.append({
-                    'id': questionBase.id,
-                    'name': questionBase.questionName,
-                })
-            return result
-        else:
-            raise LogicError("You have no authority to access")
-
-    def post(self):
-        if self.request.user.is_authenticated():
-            self.check_input('name', 'id')
-            s = SectionBase.objects.create(name=self.input['name'], creator=self.request.user, createTime=datetime.now())
-            i = 0
-            st = ''
-            for q in self.input['id']:
-                st = st + str(q) + ','
-                i = i + 1
-            s.questionCount = i
-            s.questionBases = st
-            s.save()
-        else:
-            raise LogicError("You have no authority to access")
-
-
-class ModifySection(APIView):
-    def get(self):
-        if self.request.user.is_authenticated():
-            self.check_input('id')
-            sectionBase = SectionBase.objects.get(id=self.input['id'])
-            st = sectionBase.questionBases
-            q_list = st.split(',')
-            questionBases = QuestionBase.objects.all()
-            result = []
-            for questionBase in questionBases:
-                menuIndex = -1
-                i = 0
-                flag = False
-                for q in q_list:
-                    i = i + 1
-                    if q == '':
-                        continue
-                    if int(q) == questionBase.id:
-                        menuIndex = i
-                        break
-                result.append({
-                    'id': questionBase.id,
-                    'menuIndex': menuIndex,
-                    'name': questionBase.questionName,
-                })
-            return result
-        else:
-            raise LogicError("You have no authority to access")
-
-    def post(self):
-        if self.request.user.is_authenticated():
-            self.check_input('id', 'name', 'ids')
-            s = SectionBase.objects.get(id=self.input['id'])
-            i = 0
-            st = ''
-            for q in self.input['ids']:
-                st = st + str(q) + ','
-                i = i + 1
-            s.questionCount = i
-            s.questionBases = st
-            s.createTime = datetime.now()
-            s.save()
-        else:
-            raise LogicError("You have no authority to access")
-
-
-class CheckSectionBase(APIView):
-    def get(self):
-        if self.request.user.is_authenticated():
-            self.check_input('id')
-            section = SectionBase.objects.get(id=self.input['id'])
-            if section:
-                result = []
-                st = section.questionBases
-                int_list = st.split(',')
-                for s in int_list:
-                    if s == '':
-                        continue
-                    question = QuestionBase.objects.get(id=int(s))
-                    choice = []
-                    choice.append(question.choiceOne)
-                    choice.append(question.choiceTwo)
-                    if not question.choiceThree == '':
-                        choice.append(question.choiceThree)
-                    if not question.choiceFour == '':
-                        choice.append(question.choiceFour)
-                    result.append({
-                        'question_id': question.id,
-                        'question_type': question.questionType,
-                        'question_info': question.questionInfo,
-                        'choices': choice,
-                    })
-                return result
-            else:
-                raise LogicError('No such section base')
-        else:
-            raise LogicError("You have no authority to access")
-
-    def post(self):
-        pass
-
-
-class SectionBaseList(APIView):
-    def get(self):
-        if self.request.user.is_authenticated():
-            sectionBases = SectionBase.objects.all()
-            result = []
-            for sectionBase in sectionBases:
-                u_name = User.objects.get(id=sectionBase.creator_id).username
-                result.append({
-                    'id': sectionBase.id,
-                    'name': sectionBase.name,
-                    'creator': u_name,
-                    'time':sectionBase.createTime.timestamp(),
-                })
-            return result
-        else:
-            raise LogicError("You have no authority to access")
-
-    def post(self):
-        pass
-
-
-class CreateForm(APIView):
-    def get(self):
-        if self.request.user.is_authenticated():
-            sectionBases = SectionBase.objects.all()
-            result = []
-            for sectionBase in sectionBases:
-                result.append({
-                    'id': sectionBase.id,
-                    'name': sectionBase.name,
-                })
-            return result
-        else:
-            raise LogicError("You have no authority to access")
-
-    def post(self):
-        if self.request.user.is_authenticated():
-            self.check_input('name', 'id')
-            f = FormBase.objects.create(name=self.input['name'], creator=self.request.user, createTime=datetime.now())
-            i = 0
-            st = ''
-            for s in self.input['id']:
-                st = st + str(s) + ','
-                i = i + 1
-            f.sectionBases = st
-            f.sectionCount = i
-            f.save()
-        else:
-            raise LogicError("You have no authority to access")
-
-
-class ModifyForm(APIView):
-    def get(self):
-        if self.request.user.is_authenticated():
-            self.check_input('id')
-            formBase = FormBase.objects.get(id=self.input['id'])
-            st = formBase.sectionBases
-            s_list = st.split(',')
-            # print(s_list)
-            sectionBases = SectionBase.objects.all()
-            result = []
-            for sectionBase in sectionBases:
-                menuIndex = -1
-                i = 0
-                flag = False
-                for s in s_list:
-                    i = i + 1
-                    if s == '':
-                        continue
-                    if int(s) == sectionBase.id:
-                        # print(int(s))
-                        menuIndex = i
-                        break
-                result.append({
-                    'id': sectionBase.id,
-                    'menuIndex': menuIndex,
-                    'name': sectionBase.name,
-                })
-            return result
-        else:
-            raise LogicError("You have no authority to access")
-
-    def post(self):
-        if self.request.user.is_authenticated():
-            self.check_input('id', 'name', 'ids')
-            f = FormBase.objects.get(id=self.input['id'])
-            i = 0
-            st = ''
-            for s in self.input['ids']:
-                st = st + str(s) + ','
-                i = i + 1
-            f.sectionBases = st
-            f.sectionCount = i
-            f.createTime = datetime.now()
-            f.save()
-        else:
-            raise LogicError("You have no authority to access")
-
-
-class CheckFormBase(APIView):
-    def get(self):
-        if self.request.user.is_authenticated():
-            self.check_input('id')
-            form = FormBase.objects.get(id=self.input['id'])
-            if form:
-                result = []
-                s_st = form.sectionBases
-                s_list = s_st.split(',')
-                for _section in s_list:
-                    if _section == '':
-                        continue
-                    section = SectionBase.objects.get(id=int(_section))
-                    _result = []
-                    q_st = section.questionBases
-                    q_list = q_st.split(',')
-                    for _question in q_list:
-                        if _question == '':
-                            continue
-                        question = QuestionBase.objects.get(id=int(_question))
-                        choice = []
-                        choice.append(question.choiceOne)
-                        choice.append(question.choiceTwo)
-                        if not question.choiceThree == '':
-                            choice.append(question.choiceThree)
-                        if not question.choiceFour == '':
-                            choice.append(question.choiceFour)
-                        _result.append({
-                            'section_id': section.id,
-                            'question_id': question.id,
-                            'question_type': question.questionType,
-                            'question_info': question.questionInfo,
-                            'choices': choice,
-                        })
-                    result.append(_result)
-                return result
-            else:
-                raise LogicError('No such form base')
-        else:
-            raise LogicError("You have no authority to access")
-
-    def post(self):
-        pass
-
-
-class FormBaseList(APIView):
-    def get(self):
-        if self.request.user.is_authenticated():
-            formBases = FormBase.objects.all()
-            result = []
-            for formBase in formBases:
-                u_name = User.objects.get(id=formBase.creator_id).username
-                result.append({
-                    'id': formBase.id,
-                    'name': formBase.name,
-                    'creator': u_name,
-                    'time':formBase.createTime.timestamp(),
-                })
-            return result
-        else:
-            raise LogicError("You have no authority to access")
-
-    def post(self):
-        pass
-
-
-class HandleApply(APIView):
-    def get(self):
-        if self.request.user.is_authenticated():
-            formBases = FormBase.objects.all()
-            result = []
-            for formBase in formBases:
-                u_name = User.objects.get(id=formBase.creator_id).username
-                result.append({
-                    'id': formBase.id,
-                    'name': formBase.name,
-                    'creator': u_name,
-                    'time':formBase.createTime.timestamp(),
-                })
-            return result
-        else:
-            raise LogicError("You have no authority to access")
-
-    def post(self):
-        pass
+            raise LogicError("You haven't log in")
 
 
 class CheckForm(APIView):
@@ -583,3 +262,277 @@ class FinishForm(APIView):
             f.save()
         else:
             raise LogicError("You haven't log in")
+
+
+class PATForm(APIView):
+    def get(self):
+        if self.request.user.is_authenticated():
+            self.check_input('id')
+            u_id = self.request.user.id
+            f = PAT.objects.get(id=self.input['id'])
+            u = UserInfo.objects.get(user_id=u_id)
+            r = UserInfo.objects.get(user_id=f.rater)
+            t = UserInfo.objects.get(user_id=f.trainee)
+            if u.authority == 3 and not f.trainee == u_id:
+                raise LogicError("You have no access to it")
+            elif u.authority == 2 and not t.organization == u.organization:
+                raise LogicError("You have no access to it")
+            result = {
+                'user_status': u.authority,
+                'assessTime': f.assessTime,
+                'hospital': f.hospital,
+                'occupation': f.occupation,
+                'trainee': f.trainee,
+                'trainee_license': t.license,
+                'year': t.grade,
+                'environment': f.environment,
+                'experience': f.experience,
+                'historyGrade': f.historyGrade,
+                'knowledgeGrade': f.knowledgeGrade,
+                'formulaGrade': f.formulaGrade,
+                'technicalGrade': f.technicalGrade,
+                'recordGrade': f.recordGrade,
+                'timingGrade': f.timingGrade,
+                'decisionGrade': f.decisionGrade,
+                'awarenessGrade': f.awarenessGrade,
+                'leadershipGrade': f.leadershipGrade,
+                'patientGrade': f.patientGrade,
+                'feedbackGrade': f.feedbackGrade,
+                'teachingGrade': f.teachingGrade,
+                'patientCommunicationGrade': f.patientCommunicationGrade,
+                'selfCommunicationGrade': f.selfCommunicationGrade,
+                'involvementGrade': f.involvementGrade,
+                'reliabilityGrade': f.reliabilityGrade,
+                'overallGrade': f.overallGrade,
+                'goodPart': f.goodPart,
+                'developPart': f.developPart,
+                'probityPart': f.probityPart,
+                'assessorSatisfaction': f.assessorSatisfaction,
+                'assessTimeTaken': f.assessTimeTaken,
+            }
+            return result
+        else:
+            raise LogicError("You haven't log in")
+
+    def post(self):
+        pass
+
+
+class OOTForm(APIView):
+    def get(self):
+        if self.request.user.is_authenticated():
+            self.check_input('id')
+            u_id = self.request.user.id
+            f = OOT.objects.get(id=self.input['id'])
+            u = UserInfo.objects.get(user_id=u_id)
+            r = UserInfo.objects.get(user_id=f.rater)
+            t = UserInfo.objects.get(user_id=f.trainee)
+            if u.authority == 3 and not f.trainee == u_id:
+                raise LogicError("You have no access to it")
+            elif u.authority == 2 and not t.organization == u.organization:
+                raise LogicError("You have no access to it")
+            result = {
+                'user_status': u.authority,
+                'assessTime': f.assessTime,
+                'hospital': f.hospital,
+                'rater': f.rater,
+                'rater_license': r.license,
+                'trainee': f.trainee,
+                'trainee_license': t.license,
+                'year': t.grade,
+                'experience': f.experience,
+                'groupType': f.groupType,
+                'groupOther': f.groupOther,
+                'groupName': f.groupName,
+                'groupNumber': f.groupNumber,
+                'groupTitle': f.groupTitle,
+                'groupIntro': f.groupIntro,
+                'introGrade': f.introGrade,
+                'introComment': f.introComment,
+                'presentGrade': f.presentGrade,
+                'presentComment': f.presentComment,
+                'concludeGrade': f.concludeGrade,
+                'concludeComment': f.concludeComment,
+                'overallGrade': f.overallGrade,
+                'overallComment': f.overallComment,
+                'goodPart': f.goodPart,
+                'developPart': f.developPart,
+                'agreedPart': f.agreedPart,
+                'traineeSatisfaction': f.traineeSatisfaction,
+                'assessorSatisfaction': f.assessorSatisfaction,
+                'assessTimeTaken': f.assessTimeTaken,
+                'feedbackTimeTaken': f.feedbackTimeTaken,
+            }
+            return result
+        else:
+            raise LogicError("You haven't log in")
+
+    def post(self):
+        pass
+
+
+class DOPSForm(APIView):
+    def get(self):
+        if self.request.user.is_authenticated():
+            self.check_input('id')
+            u_id = self.request.user.id
+            f = DOPS.objects.get(id=self.input['id'])
+            u = UserInfo.objects.get(user_id=u_id)
+            r = UserInfo.objects.get(user_id=f.rater)
+            t = UserInfo.objects.get(user_id=f.trainee)
+            if u.authority == 3 and not f.trainee == u_id:
+                raise LogicError("You have no access to it")
+            elif u.authority == 2 and not t.organization == u.organization:
+                raise LogicError("You have no access to it")
+            result = {
+                'user_status': u.authority,
+                'assessTime': f.assessTime,
+                'hospital': f.hospital,
+                'rater': f.rater,
+                'rater_license': r.license,
+                'trainee': f.trainee,
+                'trainee_license': t.license,
+                'year': t.grade,
+                'experience': f.experience,
+                'clinicalSetting': f.clinicalSetting,
+                'procedureName': f.procedureName,
+                'observeName': f.observeName,
+                'procedureTime': f.procedureTime,
+                'complexity': f.complexity,
+                'descriptionGrade': f.descriptionGrade,
+                'explanationGrade': f.explanationGrade,
+                'preparationGrade': f.preparationGrade,
+                'sedationGrade': f.sedationGrade,
+                'safetyGrade': f.safetyGrade,
+                'performanceGrade': f.performanceGrade,
+                'emergencyGrade': f.emergencyGrade,
+                'documentationGrade': f.documentationGrade,
+                'communicationGrade': f.communicationGrade,
+                'demonstrationGrade': f.demonstrationGrade,
+                'overallGrade': f.overallGrade,
+                'goodPart': f.goodPart,
+                'developPart': f.developPart,
+                'agreedPart': f.agreedPart,
+                'traineeSatisfaction': f.traineeSatisfaction,
+                'assessorSatisfaction': f.assessorSatisfaction,
+                'assessTimeTaken': f.assessTimeTaken,
+                'feedbackTimeTaken': f.feedbackTimeTaken,
+            }
+            return result
+        else:
+            raise LogicError("You haven't log in")
+
+    def post(self):
+        pass
+
+
+class CEXForm(APIView):
+    def get(self):
+        if self.request.user.is_authenticated():
+            self.check_input('id')
+            u_id = self.request.user.id
+            f = CEX.objects.get(id=self.input['id'])
+            u = UserInfo.objects.get(user_id=u_id)
+            r = UserInfo.objects.get(user_id=f.rater)
+            t = UserInfo.objects.get(user_id=f.trainee)
+            if u.authority == 3 and not f.trainee == u_id:
+                raise LogicError("You have no access to it")
+            elif u.authority == 2 and not t.organization == u.organization:
+                raise LogicError("You have no access to it")
+            result = {
+                'user_status': u.authority,
+                'assessTime': f.assessTime,
+                'hospital': f.hospital,
+                'rater': f.rater,
+                'rater_license': r.license,
+                'trainee': f.trainee,
+                'trainee_license': t.license,
+                'year': t.grade,
+                'experience': f.experience,
+                'clinicalSetting': f.clinicalSetting,
+                'clinicalOther': f.clinicalOther,
+                'clinicalSummary': f.clinicalSummary,
+                'clinicalFocus': f.clinicalFocus,
+                'complexity': f.complexity,
+                'historyGrade': f.historyGrade,
+                'examGrade': f.examGrade,
+                'knowledgeGrade': f.knowledgeGrade,
+                'managementGrade': f.managementGrade,
+                'judgmentGrade': f.judgmentGrade,
+                'communicationGrade': f.communicationGrade,
+                'organisationGrade': f.organisationGrade,
+                'overallGrade': f.overallGrade,
+                'goodPart': f.goodPart,
+                'developPart': f.developPart,
+                'agreedPart': f.agreedPart,
+                'traineeSatisfaction': f.traineeSatisfaction,
+                'assessorSatisfaction': f.assessorSatisfaction,
+                'assessTimeTaken': f.assessTimeTaken,
+                'feedbackTimeTaken': f.feedbackTimeTaken,
+            }
+            return result
+        else:
+            raise LogicError("You haven't log in")
+
+    def post(self):
+        pass
+
+
+class CBDForm(APIView):
+    def get(self):
+        if self.request.user.is_authenticated():
+            self.check_input('id')
+            u_id = self.request.user.id
+            f = OOT.objects.get(id=self.input['id'])
+            u = UserInfo.objects.get(user_id=u_id)
+            r = UserInfo.objects.get(user_id=f.rater)
+            t = UserInfo.objects.get(user_id=f.trainee)
+            if u.authority == 3 and not f.trainee == u_id:
+                raise LogicError("You have no access to it")
+            elif u.authority == 2 and not t.organization == u.organization:
+                raise LogicError("You have no access to it")
+            result = {
+                'user_status': u.authority,
+                'assessTime': f.assessTime,
+                'hospital': f.hospital,
+                'rater': f.rater,
+                'rater_license': r.license,
+                'trainee': f.trainee,
+                'trainee_license': t.license,
+                'year': t.grade,
+                'experience': f.experience,
+                'clinicalSetting': f.clinicalSetting,
+                'clinicalSummary': f.clinicalSummary,
+                'clinicalFocus': f.clinicalFocus,
+                'complexity': f.complexity,
+                'recordGrade': f.recordGrade,
+                'assessmentGrade': f.assessmentGrade,
+                'knowledgeGrade': f.knowledgeGrade,
+                'managementGrade': f.managementGrade,
+                'judgmentGrade': f.judgmentGrade,
+                'communicationGrade': f.communicationGrade,
+                'leadershipGrade': f.leadershipGrade,
+                'reflectiveGrade': f.reflectiveGrade,
+                'overallGrade': f.overallGrade,
+                'goodPart': f.goodPart,
+                'developPart': f.developPart,
+                'agreedPart': f.agreedPart,
+                'traineeSatisfaction': f.traineeSatisfaction,
+                'assessorSatisfaction': f.assessorSatisfaction,
+                'assessTimeTaken': f.assessTimeTaken,
+                'feedbackTimeTaken': f.feedbackTimeTaken,
+            }
+            return result
+        else:
+            raise LogicError("You haven't log in")
+
+    def post(self):
+        pass
+
+
+class CreateUser(APIView):
+    def get(self):
+        pass
+
+    def post(self):
+        pass

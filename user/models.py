@@ -5,129 +5,171 @@ from codex.baseerror import *
 # Create your models here.
 
 
-'''class UserProfileManager(BaseUserManager):
-    def create_user(self, license, name, password='Test123,.'):
-        if not license:
-            raise LogicError('You need a license')
-
-        user = self.model(
-            license=license,
-            name=name,
-        )
-
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, license, name, password='Test123,.'):
-        if not license:
-            raise LogicError('You need a license')
-
-        user = self.model(
-            license=license,
-            name=name,
-            password=password,
-        )
-
-        user.is_admin = True
-        user.save(using=self._db)
-        return user
-
-
-class UserProfile(AbstractBaseUser):
-    name = models.CharField(max_length=20)
-    license = models.CharField(max_length=20, unique=True)
-
-    objects = UserProfileManager()  # 创建用户
-
-    USERNAME_FIELD = 'license'
-    REQUIRED_FIELDS = ['name']
-
-    def get_full_name(self):
-        # The user is identified by their email address
-        return self.license
-
-    def get_short_name(self):
-        # The user is identified by their email address
-        return self.license
-
-    def __str__(self):  # __unicode__ on Python 2
-        return self.license
-
-    def has_perm(self, perm, obj=None):
-        "Does the user have a specific permission?"
-        # Simplest possible answer: Yes, always
-        return True
-
-    def has_module_perms(self, app_label):
-        "Does the user have permissions to view the app `app_label`?"
-        # Simplest possible answer: Yes, always
-        return True
-
-    @property
-    def is_staff(self):
-        "Is the user a member of staff?"
-        # Simplest possible answer: All admins are staff
-        return self.is_admin
-'''
-
-
 class UserInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=20, null=True)
+    license = models.CharField(max_length=20, null=True)
+    grade = models.IntegerField(default=-1)
+    authority = models.IntegerField(default=-1)  # 1 for supervisior 2 for rater 3 for trainee
+    organization = models.IntegerField(default=-1)
 
 
-class QuestionBase(models.Model):
-    questionName = models.TextField(null=True)
-    questionInfo = models.TextField(null=True)
-    questionType = models.IntegerField(default=0) # 1 for single choice 2 for multiple choice 3 for filling 4 for rating
-    choiceCount = models.IntegerField(default=0)
-    choiceOne = models.CharField(max_length=50)
-    choiceTwo = models.CharField(max_length=50)
-    choiceThree = models.CharField(max_length=50)
-    choiceFour = models.CharField(max_length=50)
-    creator = models.ForeignKey(User, null=True)
-    createTime = models.DateTimeField(null=True)
-
-
-class SectionBase(models.Model):
-    name = models.TextField(null=True)
-    questionCount = models.IntegerField(default=0)
-    questionBases = models.CharField(null=True, max_length=100)
-    creator = models.ForeignKey(User, null=True)
-    createTime = models.DateTimeField(null=True)
-
-
-class FormBase(models.Model):
-    name = models.TextField(null=True)
-    sectionCount = models.IntegerField(default=0)
-    sectionBases = models.CharField(null=True, max_length=100)
-    creator = models.ForeignKey(User, null=True)
-    createTime = models.DateTimeField(null=True)
-
-
-class Question(models.Model):
-    question = models.ForeignKey(QuestionBase)
-    result = models.TextField(null=True)
-
-
-class Section(models.Model):
-    name = models.TextField(null=True)
-    questions = models.CharField(null=True, max_length=100)
-
-
-class Form(models.Model):
+class Apply(models.Model):
+    trainee = models.IntegerField(default=-1)
+    organization = models.IntegerField(default=-1)
+    isHandled = models.BooleanField(default=False)
+    formBaseId = models.IntegerField(default=-1)
     formId = models.IntegerField(default=-1)
-    sections = models.CharField(null=True, max_length=100)
-    rater = models.ForeignKey(User, null=True)
+    rater = models.IntegerField(default=-1)
+    applyTime = models.DateTimeField(null=True)
     finishTime = models.DateTimeField(null=True)
 
-'''
-class Apply(models.Model):
-    form_id = models.IntegerField()
-    trainee = models.ForeignKey(User)
-    applyTime = models.DateTimeField()
-    isHandled = models.BooleanField(default=False)
-    finishTime = models.DateTimeField()
-    type = models.TextField()
-'''
+
+class OOT(models.Model):
+    assessTime = models.DateTimeField(null=True)
+    hospital = models.IntegerField(default=-1)
+    rater = models.IntegerField(default=-1)
+    trainee = models.IntegerField(default=-1)
+    experience = models.IntegerField(default=0)
+    groupType = models.IntegerField(default=-1)  # 1 for lecture 2 for seminar 3 for ward 4 for others
+    groupOther = models.CharField(null=True, max_length=20)
+    groupName = models.CharField(max_length=20)
+    groupNumber = models.IntegerField(default=-1)
+    groupTitle = models.CharField(max_length=20)
+    groupIntro = models.TextField(max_length=200)
+    introGrade = models.IntegerField(default=-1)
+    introComment = models.TextField(null=True, max_length=200)
+    presentGrade = models.IntegerField(default=-1)
+    presentComment = models.TextField(null=True, max_length=200)
+    concludeGrade = models.IntegerField(default=-1)
+    concludeComment = models.TextField(null=True, max_length=200)
+    overallGrade = models.IntegerField(default=-1)
+    overallComment = models.TextField(null=True, max_length=200)
+    goodPart = models.IntegerField(default=0)
+    developPart = models.IntegerField(default=0)
+    agreedPart = models.IntegerField(default=0)
+    traineeSatisfaction = models.IntegerField(default=-1)
+    assessorSatisfaction = models.IntegerField(default=-1)
+    assessTimeTaken = models.IntegerField(default=-1)
+    feedbackTimeTaken = models.IntegerField(default=-1)
+
+
+class CEX(models.Model):
+    assessTime = models.DateTimeField(null=True)
+    hospital = models.IntegerField(default=-1)
+    rater = models.IntegerField(default=-1)
+    trainee = models.IntegerField(default=-1)
+    experience = models.IntegerField(default=0)
+    clinicalSetting = models.IntegerField(default=-1)  # 1 for ward 2 for clinic 3 for others
+    clinicalOther = models.CharField(null=True, max_length=20)
+    clinicalSummary = models.TextField(max_length=200)
+    clinicalFocus = models.CharField(max_length=20)
+    complexity = models.IntegerField(default=-1)  # 1 for low 2 for medium 3 for high
+    historyGrade = models.IntegerField(default=-1)
+    examGrade = models.IntegerField(default=-1)
+    knowledgeGrade = models.IntegerField(default=-1)
+    managementGrade = models.IntegerField(default=-1)
+    judgmentGrade = models.IntegerField(default=-1)
+    communicationGrade = models.IntegerField(default=-1)
+    organisationGrade = models.IntegerField(default=-1)
+    overallGrade = models.IntegerField(default=-1)
+    goodPart = models.IntegerField(default=0)
+    developPart = models.IntegerField(default=0)
+    agreedPart = models.IntegerField(default=0)
+    traineeSatisfaction = models.IntegerField(default=-1)
+    assessorSatisfaction = models.IntegerField(default=-1)
+    assessTimeTaken = models.IntegerField(default=-1)
+    feedbackTimeTaken = models.IntegerField(default=-1)
+
+
+class DOPS(models.Model):
+    assessTime = models.DateTimeField(null=True)
+    hospital = models.IntegerField(default=-1)
+    rater = models.IntegerField(default=-1)
+    trainee = models.IntegerField(default=-1)
+    experience = models.IntegerField(default=0)
+    clinicalSetting = models.IntegerField(default=-1)  # 1 for operating room 2 for emergency room 3 for ward 4 for clinic 5 for others
+    procedureName = models.CharField(max_length=20)
+    observeName = models.CharField(max_length=20)
+    procedureTime = models.IntegerField(default=-1)
+    complexity = models.IntegerField(default=-1)  # 1 for low 2 for medium 3 for high
+    descriptionGrade = models.IntegerField(default=-1)
+    explanationGrade = models.IntegerField(default=-1)
+    preparationGrade = models.IntegerField(default=-1)
+    sedationGrade = models.IntegerField(default=-1)
+    safetyGrade = models.IntegerField(default=-1)
+    performanceGrade = models.IntegerField(default=-1)
+    emergencyGrade = models.IntegerField(default=-1)
+    documentationGrade = models.IntegerField(default=-1)
+    communicationGrade = models.IntegerField(default=-1)
+    demonstrationGrade = models.IntegerField(default=-1)
+    overallGrade = models.IntegerField(default=-1)
+    goodPart = models.IntegerField(default=0)
+    developPart = models.IntegerField(default=0)
+    agreedPart = models.IntegerField(default=0)
+    traineeSatisfaction = models.IntegerField(default=-1)
+    assessorSatisfaction = models.IntegerField(default=-1)
+    assessTimeTaken = models.IntegerField(default=-1)
+    feedbackTimeTaken = models.IntegerField(default=-1)
+
+
+class CBD(models.Model):
+    isReflective = models.BooleanField(default=False)
+    isRelated = models.BooleanField(default=False)
+    assessTime = models.DateTimeField(null=True)
+    hospital = models.IntegerField(default=-1)
+    rater = models.IntegerField(default=-1)
+    trainee = models.IntegerField(default=-1)
+    experience = models.IntegerField(default=0)
+    clinicalSetting = models.IntegerField(default=-1)  # 1 for ward 2 for clinic 3 for others
+    clinicalSummary = models.TextField(max_length=200)
+    clinicalFocus = models.CharField(max_length=20)
+    complexity = models.IntegerField(default=-1)  # 1 for low 2 for medium 3 for high
+    recordGrade = models.IntegerField(default=-1)
+    assessmentGrade = models.IntegerField(default=-1)
+    knowledgeGrade = models.IntegerField(default=-1)
+    managementGrade = models.IntegerField(default=-1)
+    judgmentGrade = models.IntegerField(default=-1)
+    communicationGrade = models.IntegerField(default=-1)
+    leadershipGrade = models.IntegerField(default=-1)
+    reflectiveGrade = models.IntegerField(default=-1)
+    overallGrade = models.IntegerField(default=-1)
+    goodPart = models.IntegerField(default=0)
+    developPart = models.IntegerField(default=0)
+    agreedPart = models.IntegerField(default=0)
+    traineeSatisfaction = models.IntegerField(default=-1)
+    assessorSatisfaction = models.IntegerField(default=-1)
+    assessTimeTaken = models.IntegerField(default=-1)
+    feedbackTimeTaken = models.IntegerField(default=-1)
+
+
+class PAT(models.Model):
+    assessTime = models.DateTimeField(null=True)
+    hospital = models.IntegerField(default=-1)
+    rater = models.IntegerField(default=-1)
+    trainee = models.IntegerField(default=-1)
+    occupation = models.CharField(max_length=20)
+    environment = models.CharField(max_length=20)
+    experience = models.BooleanField(default=0)
+    historyGrade = models.IntegerField(default=-1)
+    knowledgeGrade = models.IntegerField(default=-1)
+    formulaGrade = models.IntegerField(default=-1)
+    technicalGrade = models.IntegerField(default=-1)
+    recordGrade = models.IntegerField(default=-1)
+    timingGrade = models.IntegerField(default=-1)
+    decisionGrade = models.IntegerField(default=-1)
+    awarenessGrade = models.IntegerField(default=-1)
+    leadershipGrade = models.IntegerField(default=-1)
+    patientGrade = models.IntegerField(default=-1)
+    feedbackGrade = models.IntegerField(default=-1)
+    teachingGrade = models.IntegerField(default=-1)
+    patientCommunicationGrade = models.IntegerField(default=-1)
+    selfCommunicationGrade = models.IntegerField(default=-1)
+    involvementGrade = models.IntegerField(default=-1)
+    reliabilityGrade = models.IntegerField(default=-1)
+    overallGrade = models.IntegerField(default=-1)
+    goodPart = models.TextField(null=True)
+    developPart = models.TextField(null=True)
+    probityPart = models.TextField(null=True)
+    assessorSatisfaction = models.IntegerField(default=-1)
+    assessTimeTaken = models.IntegerField(default=-1)

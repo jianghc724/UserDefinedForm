@@ -9,9 +9,9 @@
         }
     </style>
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="/css/question_list.css" />
+    <link rel="stylesheet" href="/css/form_list.css" />
 
-    <title>观察项模板列表</title>
+    <title>多源反馈评估</title>
 </head>
 <body>
     <header class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -45,9 +45,6 @@
 
 <script type="text/template" id="tpl-nav-li">
     <li class="active"><a class="btn-link" href="/u/apply_list">量表列表</a></li>
-    <li class="active"><a class="btn-link" href="/u/question_list">观察项模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/section_list">章节模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/form_list">量表模板</a></li>
 </script>
 
 <script type="text/template" id="tpl-nav-li-right">
@@ -57,12 +54,12 @@
 <script type="text/template" id="tpl-content">
     <div class="container" xmlns="http://www.w3.org/1999/html">
         <div class="pageheader">
-            <h1 class="lead">观察项列表</h1>
+            <h1 class="lead">量表模板</h1>
         </div>
 
         <div class="panel panel-default">
             <div class="panel-heading">
-                <a class="btn btn-default" href="/u/create_question">新建观察项</a>
+                <a class="btn btn-default" href="/u/create_form">新建量表模板</a>
             </div>
 
             <table class="table table-hover">
@@ -76,23 +73,26 @@
                 </tr>
                 </thead>
                 <tbody id="tbody-applies">
-                {% for question in questions %}
-                <tr id="act-{{ question.id }}">
+                {% for form in forms %}
+                <tr id="act-{{ form.id }}">
                     <td class="td-id">
-                        {{ question.id }}
+                        {{ form.id }}
                     </td>
                     <td class="td-name">
-                        {{ question.name }}
+                        {{ form.name }}
                     </td>
                     <td class="td-creator">
-                        {{ question.creator }}
+                        {{ form.creator }}
                     </td>
                     <td class="td-time">
-                        {{ getTime(question.time) }}
+                        {{ getTime(form.time) }}
                     </td>
                     <td class="td-operations">
-                        <a href="/u/question_detail?id={{ question.id }}" target="_blank">
+                        <a href="/u/form_detail?id={{ form.id }}" target="_blank">
                             <span class="glyphicon glyphicon-check">查看模板</span>
+                        </a>
+                        <a href="/u/modify_form?id={{ form.id }}" target="_blank">
+                            <span class="glyphicon glyphicon-check">修改模板</span>
                         </a>
                     </td>
                 </tr>
@@ -112,11 +112,11 @@
 <script src="/3rd/swig.js"></script>
 <script src="/js/base.js"></script>
 <script src="/js/base_admin.js"></script>
-<script src="/js/question_list.js"></script>
+<script src="/js/form_list.js"></script>
 
 <script>
     var locals = {
-        questions: []
+        forms: []
     };
     var renderTemplate = function (name) {
         $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
@@ -132,12 +132,11 @@
         swig.setDefaultTZOffset(new Date().getTimezoneOffset());
         render();
         loginRequired(function () {
-            api.get('/api/u/question/list', {}, function (data) {
-                $.each(data, function (i, question) {
-                    updateDate(question, 'time');
+            api.get('/api/u/form/list', {}, function (data) {
+                $.each(data, function (i, form) {
+                    updateDate(form, 'time');
                 });
-                locals.questions = data;
-                console.log(locals.questions);
+                locals.forms = data;
                 render();
             }, dftFail);
         });
