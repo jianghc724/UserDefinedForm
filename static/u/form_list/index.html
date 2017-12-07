@@ -11,7 +11,7 @@
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/css/form_list.css" />
 
-    <title>量表模板列表</title>
+    <title>量表列表</title>
 </head>
 <body>
     <header class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -44,10 +44,15 @@
 </script>
 
 <script type="text/template" id="tpl-nav-li">
-    <li class="active"><a class="btn-link" href="/u/apply_list">量表列表</a></li>
-    <li class="active"><a class="btn-link" href="/u/question_list">观察项模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/section_list">章节模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/form_list">量表模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/apply_list">申请列表</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">量表列表</a></li>
+    {% if user_status == 1 %}
+        <li class="active"><a class="btn-link" href="/u/create_user">创建填表人员</a></li>
+    {% else %}
+        {% if user_status == 2 %}
+            <li class="active"><a class="btn-link" href="/u/create_user">创建学员</a></li>
+        {% endif %}
+    {% endif %}
 </script>
 
 <script type="text/template" id="tpl-nav-li-right">
@@ -61,17 +66,14 @@
         </div>
 
         <div class="panel panel-default">
-            <div class="panel-heading">
-                <a class="btn btn-default" href="/u/create_form">新建量表模板</a>
-            </div>
-
             <table class="table table-hover">
                 <thead>
                 <tr>
                     <th>编号</th>
-                    <th>模板名</th>
-                    <th>创建人</th>
-                    <th>创建时间</th>
+                    <th>申请人</th>
+                    <th>申请模板</th>
+                    <th>评分人</th>
+                    <th>评分时间</th>
                     <th>操作</th>
                 </tr>
                 </thead>
@@ -81,21 +83,21 @@
                     <td class="td-id">
                         {{ form.id }}
                     </td>
-                    <td class="td-name">
-                        {{ form.name }}
+                    <td class="td-trainee">
+                        {{ form.trainee }}
                     </td>
-                    <td class="td-creator">
-                        {{ form.creator }}
+                    <td class="td-type">
+                        {{ getType(form.type) }}
+                    </td>
+                    <td class="td-rater">
+                        {{ form.rater }}
                     </td>
                     <td class="td-time">
                         {{ getTime(form.time) }}
                     </td>
                     <td class="td-operations">
-                        <a href="/u/form_detail?id={{ form.id }}" target="_blank">
+                        <a href="/u/{{ getUrlName(form.id, form.type) }}" target="_blank">
                             <span class="glyphicon glyphicon-check">查看模板</span>
-                        </a>
-                        <a href="/u/modify_form?id={{ form.id }}" target="_blank">
-                            <span class="glyphicon glyphicon-check">修改模板</span>
                         </a>
                     </td>
                 </tr>
@@ -115,11 +117,12 @@
 <script src="/3rd/swig.js"></script>
 <script src="/js/base.js"></script>
 <script src="/js/base_admin.js"></script>
-<script src="/js/form_list.js"></script>
+<script src="/js/list.js"></script>
 
 <script>
     var locals = {
-        forms: []
+        forms: [],
+        user_status: -1
     };
     var renderTemplate = function (name) {
         $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
@@ -136,10 +139,11 @@
         render();
         loginRequired(function () {
             api.get('/api/u/form/list', {}, function (data) {
-                $.each(data, function (i, form) {
+                $.each(data['form'], function (i, form) {
                     updateDate(form, 'time');
                 });
-                locals.forms = data;
+                locals.forms = data['form'];
+                locals.user_status = data['user_status'];
                 render();
             }, dftFail);
         });

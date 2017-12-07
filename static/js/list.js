@@ -37,6 +37,7 @@ function getTimeStr(dt) {
 }
 
 function getTime(time) {
+    console.log(time);
     var result = getChsFullDate(time) + ' ' + getChsDay(time) + ' ' + getTimeStr(time);
     return result;
 }
@@ -47,4 +48,14 @@ function expand_long_text(dom) {
     refdata = refdata.substring(0, refdata.length - 3);
     newhtml = dom.attr('ref-data') + ' <a style="cursor:pointer;" ref-data="' + refdata + '" ref-hint="' + dom.text() + '" onclick="expand_long_text(this);">' + dom.attr('ref-hint') + '</a>';
     par.html(newhtml);
+}
+
+function getUpperName(id) {
+    var result = ['CBD', 'CEX', 'DOPS', 'OOT', 'PAT'];
+    return result[id - 1];
+}
+
+function getLowerName(id) {
+    var result = ['cbd', 'cex', 'dops', 'oot', 'pat'];
+    return result[id - 1];
 }

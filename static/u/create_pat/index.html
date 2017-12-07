@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #content {
+            padding-top: 80px;
+        }
+    </style>
+    <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/css/finish_apply.css" />
+
+    <title>量表填写</title>
+</head>
+<body>
+    <header class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-targetid=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" style="cursor:default" id="nav-title"></a>
+            </div>
+
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav" id="nav-li"></ul>
+                <ul class="nav navbar-nav navbar-right" id="nav-li-right"></ul>
+            </div>
+        </div>
+    </header>
+
+    <div id="content"></div>
+
+    <footer class="bs-footer" role="contentinfo">
+        <hr>
+        <div class="container" id="footer" style="text-align: center"></div>
+    </footer>
+
+<script type="text/template" id="tpl-nav-title">
+外科医师临床操作能力观察评估记录系统
+</script>
+
+<script type="text/template" id="tpl-nav-li">
+    <li class="active"><a class="btn-link" href="/u/apply_list">申请列表</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">量表列表</a></li>
+    {% if user_status == 1 %}
+        <li class="active"><a class="btn-link" href="/u/create_user">创建填表人员</a></li>
+    {% else %}
+        {% if user_status == 2 %}
+            <li class="active"><a class="btn-link" href="/u/create_user">创建学员</a></li>
+        {% endif %}
+    {% endif %}
+</script>
+
+<script type="text/template" id="tpl-nav-li-right">
+    <li><a href="javascript:;" onclick="logout()" >登出</a></li>
+</script>
+
+<script type="text/template" id="tpl-content">
+    <div class="container" xmlns="http://www.w3.org/1999/html">
+        {% if status == 0 or status == 1 %}
+        <div class="container" id="container-loading">
+            <img src="/img/loading.gif"><span id="loading-msg">正在载入...</span>
+        </div>
+        {% elif status == 2 %}
+        <div class="container" id="container-result">
+        <span id="result-msg">成功！</span>
+            <br/><br/>
+        <a href="/u/apply_list" class="btn btn-default">回到已填写列表</a>
+        </div>
+        {% else %}
+        <div class="pageheader">
+            <h1 class="lead">MiniPAT/MSF 多源反馈评估 Rating Form for Raters</h1>
+        </div>
+
+        <div class="panel panel-default">
+            <form class="form-horizontal" role="form" method="post" action="/api/u/create/dops" id="question-form">
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">1. About the assessment 关于评估</label>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Trainee 受训人</label>
+                        <div class="col-sm-8">
+                            {{ trainee_name }}
+                        </div>
+                    </div><div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">License No.执照编号</label>
+                        <div class="col-sm-8">
+                            {{ trainee_license }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Year of Resident:</label>
+                        <div class="col-sm-8">
+                            {{ trainee_grade }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Hospital 医院</label>
+                        <div class="col-sm-8">
+                            <input type="radio" name="hospital" autofocus value="1" checked>华信医院
+                            <input type="radio" name="hospital" autofocus value="2">清华大学医学中心
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Occupation of the Rater</label>
+                        <div class="col-sm-8">
+                            <input type="text" maxlength="20" name="occupation" class="form-control" id="input-occupation" autofocus  required>
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Environment observed 环境观察</label>
+                        <div class="col-sm-8">
+                            <input type="text" maxlength="20" name="environment" class="form-control" id="input-environment" autofocus  required>
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Have you read the MSF guidance notes? 你是否读过 MSF 指导说明？</label>
+                        <div class="col-sm-8">
+                            <input type="radio" name="experience" autofocus value="0" checked>是
+                            <input type="radio" name="experience" autofocus value="1">否
+                        </div>
+                    </div>
+                </div>
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">2. Performance Level (select the appropriate level) 成绩等级</label>
+                    <div class="form-group col-sm-offset-1 col-sm-11" class="question">
+                        <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th class="col-sm-4"></th>
+                            <th class="col-sm-2">Not observed </br> 未观察到</th>
+                            <th class="col-sm-2">Outstanding </br> 优秀</th>
+                            <th class="col-sm-2">Satisfactory </br> 良好</th>
+                            <th class="col-sm-2">Development Required </br> 未达到标准</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr id="a">
+                            <td class="td-description">
+                                Clinical Care 临床护理
+                            </td>
+                            <td class="td-not-observed">
+                                --------------
+                            </td>
+                            <td class="td-outstanding">
+                                --------------
+                            </td>
+                            <td class="td-satisfactory">
+                                --------------
+                            </td>
+                            <td class="td-development-required">
+                                --------------
+                            </td>
+                        </tr>
+                        <tr id="1">
+                            <td class="td-description">
+                                1. History taking and examination skills 病史采集和检查
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="history" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="history" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="history" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="history" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="2">
+                            <td class="td-description">
+                                2. Relevant knowledge and diagnostic skills 相关知识和诊断水平
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="knowledge" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="knowledge" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="knowledge" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="knowledge" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="3">
+                            <td class="td-description">
+                                3. Ability to formulate appropriate management plans 准确表达安排计划的能力
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="formula" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="formula" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="formula" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="formula" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="4">
+                            <td class="td-description">
+                                4. Procedural (technical) skills 专业水平
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="technical" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="technical" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="technical" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="technical" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="5">
+                            <td class="td-description">
+                                5. Record keeping (timely, accurate, legible)记录保存（及时，准确，清晰）
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="record" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="record" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="record" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="record" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="b">
+                            <td class="td-description">
+                                Maintaining good medical practice 保持良好的医疗实践
+                            </td>
+                            <td class="td-not-observed">
+                                --------------
+                            </td>
+                            <td class="td-outstanding">
+                                --------------
+                            </td>
+                            <td class="td-satisfactory">
+                                --------------
+                            </td>
+                            <td class="td-development-required">
+                                --------------
+                            </td>
+                        </tr>
+                        <tr id="6">
+                            <td class="td-description">
+                                6. Ability to manage time and work under pressure 管理实践和工作压力的能力
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="timing" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="timing" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="timing" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="timing" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="7">
+                            <td class="td-description">
+                                7. Decision making and implementation skills 决定和落实的能力
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="decision" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="decision" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="decision" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="decision" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="8">
+                            <td class="td-description">
+                                8. Awareness of own limitations (willing to ask for help)认识自身的局限性 （乐于寻求帮助）
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="awareness" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="awareness" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="awareness" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="awareness" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="9">
+                            <td class="td-description">
+                                9. Initiative and leadership skills 主动和领导能力
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="leadership" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="leadership" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="leadership" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="leadership" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="10">
+                            <td class="td-description">
+                                10. Focus on patient safety (clinical governance) 注重病人的安全（临床管理）
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="patient" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="patient" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="patient" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="patient" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="11">
+                            <td class="td-description">
+                                11. Willingness to ask for feedback & to learn from it 乐于寻求反馈并从中学习
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="feedback" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="feedback" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="feedback" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="feedback" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="12">
+                            <td class="td-description">
+                                12. Teaching (enthusiasm and effectiveness) 教学（热情和有效性）
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="teaching" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="teaching" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="teaching" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="teaching" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="c">
+                            <td class="td-description">
+                                Relationships with patients and colleagues 与病人和同事的关系
+                            </td>
+                            <td class="td-not-observed">
+                                --------------
+                            </td>
+                            <td class="td-outstanding">
+                                --------------
+                            </td>
+                            <td class="td-satisfactory">
+                                --------------
+                            </td>
+                            <td class="td-development-required">
+                                --------------
+                            </td>
+                        </tr>
+                        <tr id="13">
+                            <td class="td-description">
+                                13. Communication with patients and their relatives 与病人及其家属的沟通
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="patientCommunication" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="patientCommunication" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="patientCommunication" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="patientCommunication" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="14">
+                            <td class="td-description">
+                                14. Communication with yourself and other colleagues 自我沟通及与其他同事的沟通
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="selfCommunication" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="selfCommunication" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="selfCommunication" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="selfCommunication" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="15">
+                            <td class="td-description">
+                                15. Active involvement with your team 积极参与团队工作
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="involvement" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="involvement" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="involvement" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="involvement" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="16">
+                            <td class="td-description">
+                                16. Accessibility and reliability 可亲和可靠性
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="reliability" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="reliability" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="reliability" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="reliability" autofocus value="3">
+                            </td>
+                        </tr>
+                        <tr id="17">
+                            <td class="td-description">
+                                17 Overall, how do you rate this doctor compared to other doctors at the same level with whom you have worked? 总的来说，与和你一起工作的其他同级别医生相比，你将如何评价这名医生？
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="overall" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="overall" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="overall" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="overall" autofocus value="3">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Anything especially good you would like to note?你想要记录的事，尤其是好的？</label>
+                        <div class="col-sm-8">
+                            <input type="text" maxlength="50" name="good-part" class="form-control" id="input-good-part" autofocus  required>
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Please describe any behaviour that raised concerns or should be a particular focus for development. Include an explanation of any rating of 'Below that expected for year of training'. 请描述任何引起关注的行为或应重点发展的行为。包括解释所有评为“低于住院医生培训基本培训的预期水平”的题目。</label>
+                        <div class="col-sm-8">
+                            <input type="text" maxlength="50" name="develop-part" class="form-control" id="input-develop-part" autofocus  required>
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Do you have any concerns about this doctors probity or health? 关于这位医生的操守或卫生你是否有问题？</label>
+                        <div class="col-sm-8">
+                            <input type="text" maxlength="50" name="probity" class="form-control" id="input-probity" autofocus  required>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">3. Saving and Validating this assessment 保存并校验此评估</label>
+                    <label for="input-name" class="col-sm-12">Your satisfaction rating is about how useful you found the tool as a method of assessing performance on that occasion (this is not about satisfaction with how the trainee has performed) 您的满意评级是关于您认为此评估作为评定工具用于评估时是否有用（这不是对学员完成的如何的满意度）</label>
+                    <div class="form-group col-sm-offset-1 col-sm-11" class="question">
+                        <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th class="col-sm-4">Assessor Satisfaction 评估者满意度</th>
+                            <th class="col-sm-4">Time taken for assessment 评估时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="td-assessor-satisfaction">
+                                <div class="col-sm-8">
+                                    <input type="text" maxlength="20" name="assessor-satisfaction" class="form-control" id="input-assessor-satisfaction" autofocus  required>
+                                </div>
+                                <div class="col-sm-4" style="font-size:20px">/10</div>
+                            </td>
+                            <td class="td-assessment-time">
+                                <div class="col-sm-6">
+                                    <input type="text" maxlength="20" name="assessment-time" class="form-control" id="input-assessment-time" autofocus  required>
+                                </div>
+                                <div class="col-sm-6" style="font-size:20px">/分钟</div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            <div class="form-group">
+                <div class="col-sm-offset-4 col-sm-6">
+                    <button type="button" onclick="save();" class="btn btn-primary" id="publishBtn">保存</button>
+                </div>
+            </div>
+            </form>
+        </div>
+    {% endif %}
+    </div>
+</script>
+
+<script type="text/template" id="tpl-footer">
+
+</script>
+
+<script src="/3rd/jquery.js"></script>
+<script src="/3rd/bs/js/bootstrap.min.js"></script>
+<script src="/3rd/swig.js"></script>
+<script src="/js/base.js"></script>
+<script src="/js/base_admin.js"></script>
+
+<script>
+    var locals = {
+        status: -1,
+        apply_id: urlParam.id,
+        now: new Date(),
+        processResult: '',
+        user_status: -1,
+        trainee_name: '',
+        trainee_license: '',
+        rater_name: '',
+        rater_license: '',
+        trainee_grade: ''
+    };
+    var renderTemplate = function (name) {
+        $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
+    };
+    var render = function () {
+        renderTemplate('nav-title');
+        renderTemplate('nav-li');
+        renderTemplate('nav-li-right');
+        renderTemplate('content');
+        renderTemplate('footer');
+        $('.form-control').on('focus', function() {var me = $(this); setTimeout(function(){me.select();}, 100)});
+        api.form($('#question-form'), function (id) {
+            // success
+            locals.form_base.id = id;
+        }, function (errno, errmsg, e) {
+            // fail
+            locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
+        }, function (data) {
+            // before
+            data.status = 0;
+            if (!locals.form) {
+                locals.form = {};
+            }
+            updateObj(locals.form, data);
+            locals.status = 1;
+            locals.processResult = '';
+            render();
+            return true;
+        }, function () {
+            // complete
+            locals.status = 2;
+            render();
+        });
+    };
+    $(function () {
+        swig.setDefaultTZOffset(new Date().getTimezoneOffset());
+        render();
+        loginRequired(function () {
+            api.get('/api/u/create/pat', {id: urlParam.id}, function (data) {
+                locals.status = -1;
+                data.id = parseInt(urlParam.id);
+                locals.trainee_license = data['trainee_license'];
+                locals.trainee_name = data['trainee_name'];
+                locals.user_status = data['user_status'];
+                var temp = data['trainee_grade'];
+                if (temp == 1) {
+                    locals.trainee_grade = 'Year 1';
+                } else if (temp == 2) {
+                    locals.trainee_grade = 'Year 2';
+                } else if (temp == 3) {
+                    locals.trainee_grade = 'Year 3';
+                }
+                render();
+            }, dftFail);
+        });
+    });
+    var save= function () {
+        var data = [];
+        var flag = false;
+        var e_flag = true;
+        var form = $('#question-form');
+        console.log(form);
+        $.each(form.serializeArray(), function (i, input) {
+            if (flag) {
+                return;
+            }
+            if (input.value == ''){
+                alert("请完成量表的每一项");
+                flag = true;
+                return;
+            }
+            data[input.name] = input.value;
+            if (input.name == 'experience') {
+                e_flag = false;
+            }
+        });
+        if (e_flag){
+            alert("请完成量表的每一项");
+            return;
+        }
+        data.status = 1;
+        console.log(data);
+        if (!locals.form) {
+            locals.form = {};
+        } else {
+            data.id = locals.form.id;
+        }
+        updateObj(locals.form, data);
+        locals.status = 1;
+        locals.processResult = '';
+        render();
+        api.post(form.attr('action'), data, function (id) {
+            locals.form.id = id;
+        }, function (errno, errmsg, e) {
+            locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
+        }, function () {
+            locals.status = 2;
+            render();
+        });
+    };
+</script>
+</body>
+</html>

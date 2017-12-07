@@ -2,7 +2,8 @@ from django.shortcuts import render
 from codex.baseerror import *
 from codex.baseview import APIView
 from user.models import *
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 
 import requests
 import json
@@ -44,14 +45,18 @@ class ApplyList(APIView):
     def get(self):
         if self.request.user.is_authenticated():
             u_id = self.request.user.id
-            u = UserInfo.objects.get(user_id=u_id)
+            if not UserInfo.objects.filter(user_id=u_id):
+                u = UserInfo.objects.create(user=self.request.user, authority=1)
+                u.save()
+            else:
+                u = UserInfo.objects.get(user_id=u_id)
             apply = []
             if u.authority == 1:
                 _a = Apply.objects.filter(isHandled=False)
             elif u.authority == 2:
                 _a = Apply.objects.filter(organization=u.organization, isHandled=False)
             elif u.authority == 3:
-                _a = Apply.objects.filter(organization=u.id, isHandled=False)
+                _a = Apply.objects.filter(trainee=u_id, isHandled=False)
             else:
                 raise LogicError("unknown authority")
             for a in _a:
@@ -60,7 +65,7 @@ class ApplyList(APIView):
                     'id': a.id,
                     'apply_time': a.applyTime.timestamp(),
                     'trainee': t_name,
-                    'form_base': a.formBaseId,
+                    'type': a.formBaseId,
                 })
             result = {
                 'user_status': u.authority,
@@ -139,6 +144,7 @@ class CreateApply(APIView):
                                          applyTime=datetime.now())
             else:
                 raise LogicError("No such type")
+            a.save()
         else:
             raise LogicError("You haven't log in")
 
@@ -146,11 +152,17 @@ class CreateApply(APIView):
 class CreatePAT(APIView):
     def get(self):
         if self.request.user.is_authenticated():
+            self.check_input('id')
             u = UserInfo.objects.get(user_id=self.request.user.id)
+            a = Apply.objects.get(id=self.input['id'])
+            t = UserInfo.objects.get(user_id=a.trainee)
             if u.authority == 3:
                 raise LogicError("You have no authority")
             result = {
                 'user_status': u.authority,
+                'trainee_license': t.license,
+                'trainee_name': t.name,
+                'trainee_grade': t.grade,
             }
             return result
         else:
@@ -163,11 +175,19 @@ class CreatePAT(APIView):
 class CreateOOT(APIView):
     def get(self):
         if self.request.user.is_authenticated():
+            self.check_input('id')
             u = UserInfo.objects.get(user_id=self.request.user.id)
+            a = Apply.objects.get(id=self.input['id'])
+            t = UserInfo.objects.get(user_id=a.trainee)
             if u.authority == 3:
                 raise LogicError("You have no authority")
             result = {
                 'user_status': u.authority,
+                'rater_name': u.name,
+                'rater_license': u.license,
+                'trainee_license': t.license,
+                'trainee_name': t.name,
+                'trainee_grade': t.grade,
             }
             return result
         else:
@@ -180,11 +200,19 @@ class CreateOOT(APIView):
 class CreateDOPS(APIView):
     def get(self):
         if self.request.user.is_authenticated():
+            self.check_input('id')
             u = UserInfo.objects.get(user_id=self.request.user.id)
+            a = Apply.objects.get(id=self.input['id'])
+            t = UserInfo.objects.get(user_id=a.trainee)
             if u.authority == 3:
                 raise LogicError("You have no authority")
             result = {
                 'user_status': u.authority,
+                'rater_name': u.name,
+                'rater_license': u.license,
+                'trainee_license': t.license,
+                'trainee_name': t.name,
+                'trainee_grade': t.grade,
             }
             return result
         else:
@@ -197,11 +225,19 @@ class CreateDOPS(APIView):
 class CreateCEX(APIView):
     def get(self):
         if self.request.user.is_authenticated():
+            self.check_input('id')
             u = UserInfo.objects.get(user_id=self.request.user.id)
+            a = Apply.objects.get(id=self.input['id'])
+            t = UserInfo.objects.get(user_id=a.trainee)
             if u.authority == 3:
                 raise LogicError("You have no authority")
             result = {
                 'user_status': u.authority,
+                'rater_name': u.name,
+                'rater_license': u.license,
+                'trainee_license': t.license,
+                'trainee_name': t.name,
+                'trainee_grade': t.grade,
             }
             return result
         else:
@@ -214,11 +250,19 @@ class CreateCEX(APIView):
 class CreateCBD(APIView):
     def get(self):
         if self.request.user.is_authenticated():
+            self.check_input('id')
             u = UserInfo.objects.get(user_id=self.request.user.id)
+            a = Apply.objects.get(id=self.input['id'])
+            t = UserInfo.objects.get(user_id=a.trainee)
             if u.authority == 3:
                 raise LogicError("You have no authority")
             result = {
                 'user_status': u.authority,
+                'rater_name': u.name,
+                'rater_license': u.license,
+                'trainee_license': t.license,
+                'trainee_name': t.name,
+                'trainee_grade': t.grade,
             }
             return result
         else:
@@ -447,7 +491,7 @@ class CBDForm(APIView):
         if self.request.user.is_authenticated():
             self.check_input('id')
             u_id = self.request.user.id
-            f = OOT.objects.get(id=self.input['id'])
+            f = CBD.objects.get(id=self.input['id'])
             u = UserInfo.objects.get(user_id=u_id)
             r = UserInfo.objects.get(user_id=f.rater)
             t = UserInfo.objects.get(user_id=f.trainee)
@@ -457,6 +501,8 @@ class CBDForm(APIView):
                 raise LogicError("You have no access to it")
             result = {
                 'user_status': u.authority,
+                'isReflected': f.isReflected,
+                'isRelated': f.isRelated,
                 'assessTime': f.assessTime,
                 'hospital': f.hospital,
                 'rater': f.rater,
@@ -514,19 +560,19 @@ class CreateUser(APIView):
             if u.authority == 3:
                 raise LogicError("You have no authority")
             elif u.authority == 2:
-                for info in self.input['user']:
-                    _nu = User.objects.create(username=info['username'], password=info['password'])
-                    _nu.save()
-                    nu = UserInfo.objects.create(user=_nu, name=info['name'], license=info['license'],
-                                                 grade=info['grade'], authority=3, organization=u.organization)
-                    nu.save()
+                info = self.input['user']
+                _nu = User.objects.create_user(username=info['username'], password=info['password'])
+                _nu.save()
+                nu = UserInfo.objects.create(user=_nu, name=info['name'], license=info['license'],
+                                             grade=info['grade'], authority=3, organization=u.organization)
+                nu.save()
             elif u.authority == 1:
-                for info in self.input['user']:
-                    _nu = User.objects.create(username=info['username'], password=info['password'])
-                    _nu.save()
-                    nu = UserInfo.objects.create(user=_nu, name=info['name'], license=info['license'],
-                                                 grade=info['grade'], authority=2, organization=info['organization'])
-                    nu.save()
+                info = self.input['user']
+                _nu = User.objects.create_user(username=info['username'], password=info['password'])
+                _nu.save()
+                nu = UserInfo.objects.create(user=_nu, name=info['name'], license=info['license'],
+                                             authority=2, organization=info['organization'])
+                nu.save()
             else:
                 raise LogicError("No such authority")
         else:

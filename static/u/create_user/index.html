@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #content {
+            padding-top: 80px;
+        }
+    </style>
+    <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/css/create_user.css" />
+
+    <title>创建用户</title>
+</head>
+<body>
+    <header class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" style="cursor:default" id="nav-title"></a>
+            </div>
+
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav" id="nav-li"></ul>
+                <ul class="nav navbar-nav navbar-right" id="nav-li-right"></ul>
+            </div>
+        </div>
+    </header>
+
+    <div id="content"></div>
+
+    <footer class="bs-footer" role="contentinfo">
+        <hr>
+        <div class="container" id="footer" style="text-align: center"></div>
+    </footer>
+
+<script type="text/template" id="tpl-nav-title">
+外科医师临床操作能力观察评估记录系统
+</script>
+
+<script type="text/template" id="tpl-nav-li">
+    <li class="active"><a class="btn-link" href="/u/apply_list">申请列表</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">量表列表</a></li>
+    {% if user_status == 1 %}
+        <li class="active"><a class="btn-link" href="/u/create_user">创建填表人员</a></li>
+    {% else %}
+        {% if user_status == 2 %}
+            <li class="active"><a class="btn-link" href="/u/create_user">创建学员</a></li>
+        {% endif %}
+    {% endif %}
+</script>
+
+<script type="text/template" id="tpl-nav-li-right">
+    <li><a href="javascript:;" onclick="logout()" >登出</a></li>
+</script>
+
+<script type="text/template" id="tpl-content">
+    {% if status == 0 or status == 1 %}
+        <div class="container" id="container-loading">
+            <img src="/img/loading.gif"><span id="loading-msg">正在载入...</span>
+        </div>
+        {% elif status == 2 %}
+        <div class="container" id="container-result">
+        <span id="result-msg">成功！</span>
+            <br/><br/>
+        <a href="/u/apply_list" class="btn btn-default">回到申请列表</a>
+        </div>
+    {% else %}
+    <div class="container" xmlns="http://www.w3.org/1999/html">
+        <div class="pageheader">
+            <h1 class="lead">创建用户</h1>
+        </div>
+
+        <div class="panel panel-default">
+        <form class="form-horizontal" role="form" method="post" action="/api/u/create/user" id="user-info">
+            <table class="table table-hover">
+                <thead id="thead-user">
+                <tr>
+                    <th></th>
+                    <th>用户名</th>
+                    <th>密码</th>
+                    <th>真实姓名</th>
+                    <th>执照号</th>
+                    <th>{% if user_status == 1 %}科室{% else %}年级{% endif %}</th>
+                </tr>
+                </thead>
+                <tbody id="tbody-user">
+                <tr class="user-id">
+                    <td class="number col-sm-1">
+
+                    </td>
+                    <td class="username col-sm-2">
+                        <input type="text" maxlength="20" name="username" class="form-control" id="input-username" placeholder="用户名，用于登录" autofocus  required>
+                    </td>
+                    <td class="password col-sm-2">
+                        <input type="text" maxlength="20" name="password" class="form-control" id="input-password" placeholder="登录密码" autofocus  required>
+                    </td>
+                    <td class="name col-sm-2">
+                        <input type="text" maxlength="20" name="name" class="form-control" id="input-name" placeholder="真实姓名" autofocus  required>
+                    </td>
+                    <td class="license col-sm-2">
+                        <input type="text" maxlength="20" name="license" class="form-control" id="input-license" placeholder="执照号" autofocus  required>
+                    </td>
+                    {% if user_status == 1 %}
+                        <td class="organization col-sm-2">
+                            <input type="radio" name="organization" value="1" checked>科室一
+                            </br>
+                            <input type="radio" name="organization" value="2">科室二
+                            </br>
+                            <input type="radio" name="organization" value="3">科室三
+                            </br>
+                            <input type="radio" name="organization" value="4">科室四
+                            </br>
+                            <input type="radio" name="organization" value="5">科室五
+                        </td>
+                    {% else %}
+                        <td class="grade col-sm-2">
+                            <input type="radio" name="grade" value="1" checked>Year 1
+                            </br>
+                            <input type="radio" name="grade" value="2">Year 2
+                            </br>
+                            <input type="radio" name="grade" value="3">Year 3
+                        </td>
+                    {% endif %}
+                </tr>
+                </tbody>
+            </table>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="button" onclick="save();" class="btn btn-primary" id="publishBtn">保存</button>
+                </div>
+            </div>
+        </form>
+        </div>
+    </div>
+    {% endif %}
+</script>
+
+<script type="text/template" id="tpl-footer">
+
+</script>
+
+<script src="/3rd/jquery.js"></script>
+<script src="/3rd/bs/js/bootstrap.min.js"></script>
+<script src="/3rd/swig.js"></script>
+<script src="/js/base.js"></script>
+<script src="/js/base_admin.js"></script>
+
+<script>
+    var locals = {
+        user_status: -1,
+        status: -1,
+        processResult: ''
+    };
+    var renderTemplate = function (name) {
+        $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
+    };
+    var render = function () {
+        renderTemplate('nav-title');
+        renderTemplate('nav-li');
+        renderTemplate('nav-li-right');
+        renderTemplate('content');
+        renderTemplate('footer');
+    };
+    $(function () {
+        swig.setDefaultTZOffset(new Date().getTimezoneOffset());
+        render();
+        loginRequired(function () {
+            api.get('/api/u/create/user', {}, function (data) {
+                locals.user_status = data['user_status'];
+                render();
+            }, dftFail);
+        });
+    });
+    var save= function () {
+        var _data = {};
+        var data = {};
+        var form = $('#user-info');
+        $.each(form.serializeArray(), function (i, input) {
+            _data[input.name] = input.value;
+        });
+        if (_data['username'] == '') {
+            alert("请填写用户名");
+            return;
+        }
+        if (_data['password'] == '') {
+            alert("请填写密码");
+            return;
+        }
+        if (_data['name'] == '') {
+            alert("请填写真实姓名");
+            return;
+        }
+        if (_data['license'] == '') {
+            alert("请填写执照");
+            return;
+        }
+        data['user'] = _data;
+        data.status = 1;
+        if (!locals.user) {
+            locals.user = {};
+        } else {
+            data.id = locals.user.id;
+        }
+        updateObj(locals.user, data);
+        locals.status = 1;
+        locals.processResult = '';
+        render();
+        api.post(form.attr('action'), data, function (id) {
+            locals.user.id = id;
+        }, function (errno, errmsg, e) {
+            locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
+        }, function () {
+            locals.status = 2;
+            render();
+        });
+    };
+    $(function () {
+        swig.setDefaultTZOffset(new Date().getTimezoneOffset());
+        render();
+    });
+</script>
+</body>
+</html>

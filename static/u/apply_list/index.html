@@ -11,7 +11,7 @@
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/css/apply_list.css" />
 
-    <title>量表列表</title>
+    <title>申请列表</title>
 </head>
 <body>
     <header class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -44,10 +44,15 @@
 </script>
 
 <script type="text/template" id="tpl-nav-li">
-    <li class="active"><a class="btn-link" href="/u/apply_list">量表列表</a></li>
-    <li class="active"><a class="btn-link" href="/u/question_list">观察项模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/section_list">章节模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/question_list">量表模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/apply_list">申请列表</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">量表列表</a></li>
+    {% if user_status == 1 %}
+        <li class="active"><a class="btn-link" href="/u/create_user">创建填表人员</a></li>
+    {% else %}
+        {% if user_status == 2 %}
+            <li class="active"><a class="btn-link" href="/u/create_user">创建学员</a></li>
+        {% endif %}
+    {% endif %}
 </script>
 
 <script type="text/template" id="tpl-nav-li-right">
@@ -57,21 +62,50 @@
 <script type="text/template" id="tpl-content">
     <div class="container" xmlns="http://www.w3.org/1999/html">
         <div class="pageheader">
-            <h1 class="lead">量表列表</h1>
+            <h1 class="lead">申请列表</h1>
         </div>
-
         <div class="panel panel-default">
-            <div class="panel-heading">
-                <a class="btn btn-default" href="/u/create_apply">填写量表</a>
-            </div>
-
+            {% if user_status == 3 %}
+                <div class="panel-heading">
+                    <a class="btn btn-default" href="/u/create_apply">新建申请</a>
+                </div>
+                <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>编号</th>
+                    <th>申请人</th>
+                    <th>申请量表</th>
+                    <th>申请时间</th>
+                </tr>
+                </thead>
+                <tbody id="tbody-applies">
+                {% for apply in applies %}
+                <tr id="act-{{ apply.id }}">
+                    <td class="td-id">
+                        {{ apply.id }}
+                    </td>
+                    <td class="td-name">
+                        {{ apply.trainee }}
+                    </td>
+                    <td class="td-name">
+                        {{ getUpperName(apply.type) }}
+                    </td>
+                    <td class="td-apply_time">
+                        {{ getTime(apply.apply_time) }}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+            {% if user_status == 2 %}
             <table class="table table-hover">
                 <thead>
                 <tr>
                     <th>编号</th>
-                    <th>使用模板名</th>
-                    <th>填写人</th>
-                    <th>完成时间</th>
+                    <th>申请人</th>
+                    <th>申请量表</th>
+                    <th>申请时间</th>
                     <th>操作</th>
                 </tr>
                 </thead>
@@ -82,25 +116,24 @@
                         {{ apply.id }}
                     </td>
                     <td class="td-name">
-                        {{ apply.name }}
+                        {{ apply.trainee }}
                     </td>
-                    <td class="td-status">
-                        {{ apply.rater }}
+                    <td class="td-name">
+                        {{ getUpperName(apply.type) }}
                     </td>
                     <td class="td-apply_time">
-                        {{ getTime(apply.time) }}
+                        {{ getTime(apply.apply_time) }}
                     </td>
                     <td class="td-operations">
-                    {% if apply.status == 0 %}
-                        <a href="/u/apply_detail?id={{ apply.id }}" target="_blank">
-                            <span class="glyphicon glyphicon-check">查看量表</span>
+                        <a href="/u/create_{{ getLowerName(apply.type) }}?id={{ apply.id }}" target="_blank">
+                            <span class="glyphicon glyphicon-check">填写量表</span>
                         </a>
-                    {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
+            {% endif %}
         </div>
     </div>
 </script>
@@ -114,11 +147,12 @@
 <script src="/3rd/swig.js"></script>
 <script src="/js/base.js"></script>
 <script src="/js/base_admin.js"></script>
-<script src="/js/apply_list.js"></script>
+<script src="/js/list.js"></script>
 
 <script>
     var locals = {
-        applies: []
+        applies: [],
+        user_status: -1
     };
     var renderTemplate = function (name) {
         $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
@@ -135,10 +169,11 @@
         render();
         loginRequired(function () {
             api.get('/api/u/apply/list', {}, function (data) {
-                $.each(data, function (i, apply) {
-                    updateDate(apply, 'time');
+                $.each(data['apply'], function (i, apply) {
+                    updateDate(apply, 'apply_time');
                 });
-                locals.applies = data;
+                locals.applies = data['apply'];
+                locals.user_status = data['user_status'];
                 render();
             }, dftFail);
         });

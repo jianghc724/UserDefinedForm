@@ -9,9 +9,9 @@
         }
     </style>
     <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="/css/form_list.css" />
+    <link rel="stylesheet" href="/css/create_apply.css" />
 
-    <title>选择量表模板</title>
+    <title>申请量表</title>
 </head>
 <body>
     <header class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -44,10 +44,8 @@
 </script>
 
 <script type="text/template" id="tpl-nav-li">
-    <li class="active"><a class="btn-link" href="/u/apply_list">量表列表</a></li>
-    <li class="active"><a class="btn-link" href="/u/question_list">观察项模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/section_list">章节模板</a></li>
-    <li class="active"><a class="btn-link" href="/u/form_list">量表模板</a></li>
+    <li class="active"><a class="btn-link" href="/u/apply_list">申请列表</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">量表列表</a></li>
 </script>
 
 <script type="text/template" id="tpl-nav-li-right">
@@ -55,48 +53,42 @@
 </script>
 
 <script type="text/template" id="tpl-content">
+    {% if status == 0 or status == 1 %}
+        <div class="container" id="container-loading">
+            <img src="/img/loading.gif"><span id="loading-msg">正在载入...</span>
+        </div>
+        {% elif status == 2 %}
+        <div class="container" id="container-result">
+        <span id="result-msg">成功！</span>
+            <br/><br/>
+        <a href="/u/apply_list" class="btn btn-default">回到申请列表</a>
+        </div>
+    {% else %}
     <div class="container" xmlns="http://www.w3.org/1999/html">
         <div class="pageheader">
-            <h1 class="lead">量表模板</h1>
+            <h1 class="lead">创建申请</h1>
         </div>
 
         <div class="panel panel-default">
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th>编号</th>
-                    <th>模板名</th>
-                    <th>创建人</th>
-                    <th>创建时间</th>
-                    <th>操作</th>
-                </tr>
-                </thead>
-                <tbody id="tbody-applies">
-                {% for form in forms %}
-                <tr id="act-{{ form.id }}">
-                    <td class="td-id">
-                        {{ form.id }}
-                    </td>
-                    <td class="td-id">
-                        {{ form.name }}
-                    </td>
-                    <td class="td-creator">
-                        {{ form.creator }}
-                    </td>
-                    <td class="td-time">
-                        {{ getTime(form.time) }}
-                    </td>
-                    <td class="td-operations">
-                        <a href="/u/finish_apply?id={{ form.id }}" target="_blank">
-                            <span class="glyphicon glyphicon-check">选择模板</span>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <form class="form-horizontal" role="form" method="post" action="/api/u/create/apply" id="create-apply">
+
+            <label for="input-name" class="col-sm-4">请选择量表类型</label>
+            <div class="col-sm-8">
+                <input type="radio" name="type" value="cbd" checked>CBD
+                <input type="radio" name="type" value="cex">CEX
+                <input type="radio" name="type" value="dops">DOPS
+                <input type="radio" name="type" value="oot">OOT
+                <input type="radio" name="type" value="pat">PAT
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-4 col-sm-6">
+                    <button type="button" onclick="save();" class="btn btn-primary" id="publishBtn">保存</button>
+                </div>
+            </div>
+        </form>
         </div>
     </div>
+    {% endif %}
 </script>
 
 <script type="text/template" id="tpl-footer">
@@ -108,11 +100,11 @@
 <script src="/3rd/swig.js"></script>
 <script src="/js/base.js"></script>
 <script src="/js/base_admin.js"></script>
-<script src="/js/form_list.js"></script>
 
 <script>
     var locals = {
-        forms: []
+        status: -1,
+        processResult: ''
     };
     var renderTemplate = function (name) {
         $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
@@ -127,15 +119,37 @@
     $(function () {
         swig.setDefaultTZOffset(new Date().getTimezoneOffset());
         render();
-        loginRequired(function () {
-            api.get('/api/u/create/apply', {}, function (data) {
-                $.each(data, function (i, form) {
-                    updateDate(form, 'time');
-                });
-                locals.forms = data;
-                render();
-            }, dftFail);
+    });
+    var save= function () {
+        var _data = {};
+        var data = {};
+        var form = $('#create-apply');
+        $.each(form.serializeArray(), function (i, input) {
+            data[input.name] = input.value;
         });
+        console.log(data);
+        data.status = 1;
+        if (!locals.apply) {
+            locals.apply = {};
+        } else {
+            data.id = locals.apply.id;
+        }
+        updateObj(locals.apply, data);
+        locals.status = 1;
+        locals.processResult = '';
+        render();
+        api.post(form.attr('action'), data, function (id) {
+            locals.apply.id = id;
+        }, function (errno, errmsg, e) {
+            locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
+        }, function () {
+            locals.status = 2;
+            render();
+        });
+    };
+    $(function () {
+        swig.setDefaultTZOffset(new Date().getTimezoneOffset());
+        render();
     });
 </script>
 </body>

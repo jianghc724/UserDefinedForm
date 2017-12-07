@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #content {
+            padding-top: 80px;
+        }
+    </style>
+    <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/css/finish_apply.css" />
+
+    <title>量表填写</title>
+</head>
+<body>
+    <header class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-targetid=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" style="cursor:default" id="nav-title"></a>
+            </div>
+
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav" id="nav-li"></ul>
+                <ul class="nav navbar-nav navbar-right" id="nav-li-right"></ul>
+            </div>
+        </div>
+    </header>
+
+    <div id="content"></div>
+
+    <footer class="bs-footer" role="contentinfo">
+        <hr>
+        <div class="container" id="footer" style="text-align: center"></div>
+    </footer>
+
+<script type="text/template" id="tpl-nav-title">
+外科医师临床操作能力观察评估记录系统
+</script>
+
+<script type="text/template" id="tpl-nav-li">
+    <li class="active"><a class="btn-link" href="/u/apply_list">申请列表</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">量表列表</a></li>
+    {% if user_status == 1 %}
+        <li class="active"><a class="btn-link" href="/u/create_user">创建填表人员</a></li>
+    {% else %}
+        {% if user_status == 2 %}
+            <li class="active"><a class="btn-link" href="/u/create_user">创建学员</a></li>
+        {% endif %}
+    {% endif %}
+</script>
+
+<script type="text/template" id="tpl-nav-li-right">
+    <li><a href="javascript:;" onclick="logout()" >登出</a></li>
+</script>
+
+<script type="text/template" id="tpl-content">
+    <div class="container" xmlns="http://www.w3.org/1999/html">
+        {% if status == 0 or status == 1 %}
+        <div class="container" id="container-loading">
+            <img src="/img/loading.gif"><span id="loading-msg">正在载入...</span>
+        </div>
+        {% elif status == 2 %}
+        <div class="container" id="container-result">
+        <span id="result-msg">成功！</span>
+            <br/><br/>
+        <a href="/u/apply_list" class="btn btn-default">回到已填写列表</a>
+        </div>
+        {% else %}
+        <div class="pageheader">
+            <h1 class="lead">(OOT)Observation of Teaching 教学观察</h1>
+        </div>
+
+        <div class="panel panel-default">
+            <form class="form-horizontal" role="form" method="post" action="/api/u/create/oot" id="question-form">
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">1. About the assessment 关于评估</label>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Hospital 医院</label>
+                        <div class="col-sm-8">
+                            <input type="radio" name="hospital" autofocus value="1" checked>华信医院
+                            <input type="radio" name="hospital" autofocus value="2">清华大学医学中心
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Rater/Assessor 评估者</label>
+                        <div class="col-sm-8">
+                            {{ rater_name }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">License No.执照编号</label>
+                        <div class="col-sm-8">
+                            {{ rater_license }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Rater has received training for this type of assessment? 评估者是否训练过使用此评估工具？</label>
+                        <div class="col-sm-8">
+                            <input type="checkbox" name="experience" autofocus value="1">None 无
+                            <input type="checkbox" name="experience" autofocus value="2">Written 书面形式
+                            <input type="checkbox" name="experience" autofocus value="4">Web/CD/DVD
+                            <input type="checkbox" name="experience" autofocus value="8">Workshop 研讨会
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Trainee 受训人</label>
+                        <div class="col-sm-8">
+                            {{ trainee_name }}
+                        </div>
+                    </div><div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">License No.执照编号</label>
+                        <div class="col-sm-8">
+                            {{ trainee_license }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Year of Resident:</label>
+                        <div class="col-sm-8">
+                            {{ trainee_grade }}
+                        </div>
+                    </div>
+                </div>
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">2. Institution Setting 机构设置:</label>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">学习形式</label>
+                        <div class="col-sm-8">
+                            <input type="radio" name="setting" autofocus value="1">Lecture
+                            <input type="radio" name="setting" autofocus value="2">Seminar
+                            <input type="radio" name="setting" autofocus value="3">Teaching Ward Round
+                            <input type="radio" name="setting" autofocus value="4">Other 另一个
+                            <input type="text" maxlength="20" name="setting-other" class="form-control" id="input-setting-other" placeholder="如果选择另一个，请具体填写">
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Learners Group 学习小组</label>
+                        <div class="col-sm-8">
+                            <input type="text" maxlength="20" name="group-name" class="form-control" id="input-group-name" autofocus  required>
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Number of Learners 学习者数目</label>
+                        <div class="col-sm-8">
+                            <input type="radio" name="times" autofocus value="1" checked>1
+                            <input type="radio" name="times" autofocus value="2">2
+                            <input type="radio" name="times" autofocus value="3">3
+                            <input type="radio" name="times" autofocus value="4">4
+                            <input type="radio" name="times" autofocus value="5">大于等于5
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Title of session 会议题目</label>
+                        <div class="col-sm-8">
+                            <input type="text" maxlength="20" name="group-title" class="form-control" id="input-group-title" autofocus  required>
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Brief Description of session. 会议简要说明</label>
+                        <div class="col-sm-8">
+                            <input type="text" maxlength="50" name="group-description" class="form-control" id="input-group-description" autofocus  required>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">3. Performance Level (select the appropriate level) 成绩等级</label>
+                    <div class="form-group col-sm-offset-1 col-sm-11" class="question">
+                        <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th class="col-sm-3"></th>
+                            <th class="col-sm-1">Not observed </br> 未观察到</th>
+                            <th class="col-sm-2">Level 2 </br> Appropriate for completion of Resident training </br> 达到住院医师培训结业水平</th>
+                            <th class="col-sm-2">Level 1 </br> Appropriate for year of training </br> 达到住院医师培训基本水平</th>
+                            <th class="col-sm-2">Level 0 </br> Below that expected for year of training </br> 低于住院医生培训基本培训的预期水平</th>
+                            <th class="col-sm-2">Comments </br> 评价</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr id="1">
+                            <td class="td-description">
+                                1. Introduction 介绍 </br> • Introduction of self 自我介绍 </br> • Gained attention of group 受到小组关注 </br> • Shared the objective 共享目标
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="introduction" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="introduction" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="introduction" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="introduction" autofocus value="3">
+                            </td>
+                            <td class="td-comments">
+                                <input type="text" maxlength="50" name="introduction" class="form-control" id="input-introduction" autofocus  required>
+                            </td>
+                        </tr>
+                        <tr id="2">
+                            <td class="td-description">
+                                2. Presentation 陈述 </br> • Key points emphasized 强调的重点 </br> • Clear, concise delivery 表达清晰、简洁 </br> • Knowledge of subject 知识主题 </br> • Logical sequence 逻辑顺序 </br> • Well paced 节奏适中 </br> • Good use of voice/tone 语音语调 </br> • Resources supported topic 使用材料支持主题 </br> • Quality of resources 所用材料的质量 </br> • Effective group participation 有效参与小组 </br> • Effective use of questioning 有效使用问答形式 </br> • Appropriate teaching methods used 教学方法使用得当
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="presentation" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="presentation" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="presentation" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="presentation" autofocus value="3">
+                            </td>
+                            <td class="td-comments">
+                                <input type="text" maxlength="50" name="presentation" class="form-control" id="input-presentation" autofocus  required>
+                            </td>
+                        </tr>
+                        <tr id="3">
+                            <td class="td-description">
+                                3. Conclusion 结论 </br> • Summarised key points 重点总结 </br> • Objectives were met 达到目标 </br> • Kept to time limit 遵守时间限制
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="conclusion" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="conclusion" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="conclusion" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="conclusion" autofocus value="3">
+                            </td>
+                            <td class="td-comments">
+                                <input type="text" maxlength="50" name="conclusion" class="form-control" id="input-conclusion" autofocus  required>
+                            </td>
+                        </tr>
+                        <tr id="4">
+                            <td class="td-description">
+                                Overall Performance Level 综合成绩等级
+                            </td>
+                            <td class="td-not-observed">
+                                <input type="radio" name="overall" autofocus value="0" checked>
+                            </td>
+                            <td class="td-outstanding">
+                                <input type="radio" name="overall" autofocus value="1">
+                            </td>
+                            <td class="td-satisfactory">
+                                <input type="radio" name="overall" autofocus value="2">
+                            </td>
+                            <td class="td-development-required">
+                                <input type="radio" name="overall" autofocus value="3">
+                            </td>
+                            <td class="td-comments">
+
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">4. FEEDBACK 反馈</label>
+                    <label for="input-name" class="col-sm-12">Verbal feedback is a mandatory part of this assessment. Please use this space to record areas of strength and suggestions for development which were highlighted during discussion with the trainee: 口头反馈是此评估必不可少的组成部分。请记录与受训人讨论时提到的发展的优势领域及建议</label>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">What aspects were done well? 哪部分完成的好？</label>
+                        <div class="col-sm-8">
+                            <input type="text" maxlength="50" name="good-part" class="form-control" id="input-good-part" autofocus  required>
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Areas for development:需要发展的部分：</label>
+                        <div class="col-sm-8">
+                            <input type="text" maxlength="50" name="develop-part" class="form-control" id="input-develop-part" autofocus  required>
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Agreed action 已达到标准的部分</label>
+                        <div class="col-sm-8">
+                            <input type="text" maxlength="50" name="agreed-action" class="form-control" id="input-agreed-action" autofocus  required>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">5. Saving and Validating this assessment 保存并校验此评估</label>
+                    <label for="input-name" class="col-sm-12">Your satisfaction rating is about how useful you found the tool as a method of assessing performance on that occasion (this is not about satisfaction with how the trainee has performed) 您的满意评级是关于您认为此评估作为评定工具用于评估时是否有用（这不是对学员完成的如何的满意度）</label>
+                    <div class="form-group col-sm-offset-1 col-sm-11" class="question">
+                        <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th class="col-sm-2">Trainee Satisfaction 受训者满意度</th>
+                            <th class="col-sm-2">Assessor Satisfaction 评估者满意度</th>
+                            <th class="col-sm-2">Time taken for assessment 评估时间</th>
+                            <th class="col-sm-2">Time taken for feedback 反馈时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="td-trainee-satisfaction">
+                                <div class="col-sm-8">
+                                    <input type="text" maxlength="20" name="trainee-satisfaction" class="form-control" id="input-trainee-satisfaction" autofocus  required>
+                                </div>
+                                <div class="col-sm-4" style="font-size:20px">/10</div>
+                            </td>
+                            <td class="td-assessor-satisfaction">
+                                <div class="col-sm-8">
+                                    <input type="text" maxlength="20" name="assessor-satisfaction" class="form-control" id="input-assessor-satisfaction" autofocus  required>
+                                </div>
+                                <div class="col-sm-4" style="font-size:20px">/10</div>
+                            </td>
+                            <td class="td-assessment-time">
+                                <div class="col-sm-6">
+                                    <input type="text" maxlength="20" name="assessment-time" class="form-control" id="input-assessment-time" autofocus  required>
+                                </div>
+                                <div class="col-sm-6" style="font-size:20px">/分钟</div>
+                            </td>
+                            <td class="td-feedback-time">
+                                <div class="col-sm-6">
+                                    <input type="text" maxlength="20" name="feedback-time" class="form-control" id="input-feedback-time" autofocus  required>
+                                </div>
+                                <div class="col-sm-6" style="font-size:20px">/分钟</div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            <div class="form-group">
+                <div class="col-sm-offset-4 col-sm-6">
+                    <button type="button" onclick="save();" class="btn btn-primary" id="publishBtn">保存</button>
+                </div>
+            </div>
+            </form>
+        </div>
+    {% endif %}
+    </div>
+</script>
+
+<script type="text/template" id="tpl-footer">
+
+</script>
+
+<script src="/3rd/jquery.js"></script>
+<script src="/3rd/bs/js/bootstrap.min.js"></script>
+<script src="/3rd/swig.js"></script>
+<script src="/js/base.js"></script>
+<script src="/js/base_admin.js"></script>
+
+<script>
+    var locals = {
+        status: -1,
+        apply_id: urlParam.id,
+        now: new Date(),
+        processResult: '',
+        user_status: -1,
+        trainee_name: '',
+        trainee_license: '',
+        rater_name: '',
+        rater_license: '',
+        trainee_grade: ''
+    };
+    var renderTemplate = function (name) {
+        $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
+    };
+    var render = function () {
+        renderTemplate('nav-title');
+        renderTemplate('nav-li');
+        renderTemplate('nav-li-right');
+        renderTemplate('content');
+        renderTemplate('footer');
+        $('.form-control').on('focus', function() {var me = $(this); setTimeout(function(){me.select();}, 100)});
+        api.form($('#question-form'), function (id) {
+            // success
+            locals.form_base.id = id;
+        }, function (errno, errmsg, e) {
+            // fail
+            locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
+        }, function (data) {
+            // before
+            data.status = 0;
+            if (!locals.form) {
+                locals.form = {};
+            }
+            updateObj(locals.form, data);
+            locals.status = 1;
+            locals.processResult = '';
+            render();
+            return true;
+        }, function () {
+            // complete
+            locals.status = 2;
+            render();
+        });
+    };
+    $(function () {
+        swig.setDefaultTZOffset(new Date().getTimezoneOffset());
+        render();
+        loginRequired(function () {
+            api.get('/api/u/create/oot', {id: urlParam.id}, function (data) {
+                locals.status = -1;
+                data.id = parseInt(urlParam.id);
+                locals.trainee_license = data['trainee_license'];
+                locals.trainee_name = data['trainee_name'];
+                locals.rater_license = data['rater_license'];
+                locals.rater_name = data['rater_name'];
+                locals.user_status = data['user_status'];
+                var temp = data['trainee_grade'];
+                if (temp == 1) {
+                    locals.trainee_grade = 'Year 1';
+                } else if (temp == 2) {
+                    locals.trainee_grade = 'Year 2';
+                } else if (temp == 3) {
+                    locals.trainee_grade = 'Year 3';
+                }
+                render();
+            }, dftFail);
+        });
+    });
+    var save= function () {
+        var data = [];
+        var flag = false;
+        var e_flag = true;
+        var form = $('#question-form');
+        console.log(form);
+        $.each(form.serializeArray(), function (i, input) {
+            if (flag) {
+                return;
+            }
+            if (input.value == ''){
+                alert("请完成量表的每一项");
+                flag = true;
+                return;
+            }
+            data[input.name] = input.value;
+            if (input.name == 'experience') {
+                e_flag = false;
+            }
+        });
+        if (e_flag){
+            alert("请完成量表的每一项");
+            return;
+        }
+        data.status = 1;
+        console.log(data);
+        if (!locals.form) {
+            locals.form = {};
+        } else {
+            data.id = locals.form.id;
+        }
+        updateObj(locals.form, data);
+        locals.status = 1;
+        locals.processResult = '';
+        render();
+        api.post(form.attr('action'), data, function (id) {
+            locals.form.id = id;
+        }, function (errno, errmsg, e) {
+            locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
+        }, function () {
+            locals.status = 2;
+            render();
+        });
+    };
+</script>
+</body>
+</html>
