@@ -46,7 +46,8 @@ class ApplyList(APIView):
         if self.request.user.is_authenticated():
             u_id = self.request.user.id
             if not UserInfo.objects.filter(user_id=u_id):
-                u = UserInfo.objects.create(user=self.request.user, authority=1)
+                u = UserInfo.objects.create(user=self.request.user, authority=1,
+                                            name=User.objects.get(id=u_id).username, license="Supervisor")
                 u.save()
             else:
                 u = UserInfo.objects.get(user_id=u_id)
@@ -156,8 +157,14 @@ class CreatePAT(APIView):
             u = UserInfo.objects.get(user_id=self.request.user.id)
             a = Apply.objects.get(id=self.input['id'])
             t = UserInfo.objects.get(user_id=a.trainee)
+            if a.isHandling:
+                raise LogicError("Another rater is handling the apply")
+            if a.isHandled:
+                raise LogicError("Apply has been handled")
             if u.authority == 3:
                 raise LogicError("You have no authority")
+            a.isHandling = True
+            a.save()
             result = {
                 'user_status': u.authority,
                 'trainee_license': t.license,
@@ -195,6 +202,7 @@ class CreatePAT(APIView):
             f.save()
             a.finishTime = datetime.now()
             a.isHandled = True
+            a.isHandling = False
             a.rater = self.request.user.id
             a.formId = f.id
             a.save()
@@ -209,8 +217,14 @@ class CreateOOT(APIView):
             u = UserInfo.objects.get(user_id=self.request.user.id)
             a = Apply.objects.get(id=self.input['id'])
             t = UserInfo.objects.get(user_id=a.trainee)
+            if a.isHandling:
+                raise LogicError("Another rater is handling the apply")
+            if a.isHandled:
+                raise LogicError("Apply has been handled")
             if u.authority == 3:
                 raise LogicError("You have no authority")
+            a.isHandling = True
+            a.save()
             result = {
                 'user_status': u.authority,
                 'rater_name': u.name,
@@ -247,6 +261,7 @@ class CreateOOT(APIView):
             f.save()
             a.finishTime = datetime.now()
             a.isHandled = True
+            a.isHandling = False
             a.rater = self.request.user.id
             a.formId = f.id
             a.save()
@@ -261,8 +276,14 @@ class CreateDOPS(APIView):
             u = UserInfo.objects.get(user_id=self.request.user.id)
             a = Apply.objects.get(id=self.input['id'])
             t = UserInfo.objects.get(user_id=a.trainee)
+            if a.isHandling:
+                raise LogicError("Another rater is handling the apply")
+            if a.isHandled:
+                raise LogicError("Apply has been handled")
             if u.authority == 3:
                 raise LogicError("You have no authority")
+            a.isHandling = True
+            a.save()
             result = {
                 'user_status': u.authority,
                 'rater_name': u.name,
@@ -301,6 +322,7 @@ class CreateDOPS(APIView):
             f.save()
             a.finishTime = datetime.now()
             a.isHandled = True
+            a.isHandling = False
             a.rater = self.request.user.id
             a.formId = f.id
             a.save()
@@ -315,8 +337,14 @@ class CreateCEX(APIView):
             u = UserInfo.objects.get(user_id=self.request.user.id)
             a = Apply.objects.get(id=self.input['id'])
             t = UserInfo.objects.get(user_id=a.trainee)
+            if a.isHandling:
+                raise LogicError("Another rater is handling the apply")
+            if a.isHandled:
+                raise LogicError("Apply has been handled")
             if u.authority == 3:
                 raise LogicError("You have no authority")
+            a.isHandling = True
+            a.save()
             result = {
                 'user_status': u.authority,
                 'rater_name': u.name,
@@ -353,6 +381,7 @@ class CreateCEX(APIView):
             f.save()
             a.finishTime = datetime.now()
             a.isHandled = True
+            a.isHandling = False
             a.rater = self.request.user.id
             a.formId = f.id
             a.save()
@@ -367,8 +396,14 @@ class CreateCBD(APIView):
             u = UserInfo.objects.get(user_id=self.request.user.id)
             a = Apply.objects.get(id=self.input['id'])
             t = UserInfo.objects.get(user_id=a.trainee)
+            if a.isHandling:
+                raise LogicError("Another rater is handling the apply")
+            if a.isHandled:
+                raise LogicError("Apply has been handled")
             if u.authority == 3:
                 raise LogicError("You have no authority")
+            a.isHandling = True
+            a.save()
             result = {
                 'user_status': u.authority,
                 'rater_name': u.name,
@@ -406,6 +441,7 @@ class CreateCBD(APIView):
             f.save()
             a.finishTime = datetime.now()
             a.isHandled = True
+            a.isHandling = False
             a.rater = self.request.user.id
             a.formId = f.id
             a.save()

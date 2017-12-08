@@ -18,6 +18,7 @@ class Apply(models.Model):
     trainee = models.IntegerField(default=-1)
     organization = models.IntegerField(default=-1)
     isHandled = models.BooleanField(default=False)
+    isHandling = models.BooleanField(default=False)
     formBaseId = models.IntegerField(default=-1)
     formId = models.IntegerField(default=-1)
     rater = models.IntegerField(default=-1)
