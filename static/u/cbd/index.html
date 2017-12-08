@@ -128,10 +128,7 @@
                     <div class="form-group" class="question">
                         <label for="input-name" class="col-sm-4">Rater has received training for this type of assessment? 评估者是否训练过使用此评估工具？</label>
                         <div class="col-sm-8">
-                            <input type="checkbox" name="experience" autofocus value="1">None 无
-                            <input type="checkbox" name="experience" autofocus value="2">Written 书面形式
-                            <input type="checkbox" name="experience" autofocus value="4">Web/CD/DVD
-                            <input type="checkbox" name="experience" autofocus value="8">Workshop 研讨会
+                            {{ getExp(form.experience) }}
                         </div>
                     </div>
                     <div class="form-group" class="question">
@@ -541,6 +538,26 @@
             }, dftFail);
         });
     });
+    var getExp = function(ex) {
+        var result = "";
+        if (ex >= 8) {
+            result = result + "Workshop 研讨会 ";
+            ex -= 8;
+        }
+        if (ex >= 4) {
+            result = result + "Web/CD/DVD ";
+            ex -= 4;
+        }
+        if (ex >= 2) {
+            result = result + "Written 书面形式 ";
+            ex -= 2;
+        }
+        if (ex >= 1) {
+            result = result + "None 无 ";
+            ex -= 1;
+        }
+        return result;
+    }
 </script>
 </body>
 </html>

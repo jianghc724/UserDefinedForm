@@ -443,6 +443,7 @@
         var flag = false;
         var e_flag = true;
         var form = $('#question-form');
+        var experience = 0;
         $.each(form.serializeArray(), function (i, input) {
             if (flag) {
                 return;
@@ -454,9 +455,11 @@
                     return;
                 }
             }
-            data[input.name] = input.value;
             if (input.name == 'experience') {
+                experience += parseInt(input.value);
                 e_flag = false;
+            } else {
+                data[input.name] = input.value;
             }
         });
         if (flag) {
@@ -466,6 +469,7 @@
             alert("请完成量表的每一项");
             return;
         }
+        data['experience'] = experience;
         data['id'] = urlParam.id;
         data.status = 1;
         console.log(data);
