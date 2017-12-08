@@ -330,7 +330,34 @@ class CreateCEX(APIView):
             raise LogicError("You haven't log in")
 
     def post(self):
-        pass
+        if self.request.user.is_authenticated():
+            info = self.input
+            self.check_input('id')
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            a = Apply.objects.get(id=self.input['id'])
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            f = CEX.objects.create(assessTime=datetime.now(), hospital=info['hospital'],
+                                   trainee=a.trainee, rater=self.request.user.id, experience=info['experience'],
+                                   clinicalSetting=info['setting'], clinicalOther=info['setting-other'],
+                                   clinicalSummary=info['summary'], clinicalFocus=info['focus'],
+                                   complexity=info['complexity'], historyGrade=info['history'],
+                                   examGrade=info['exam'], knowledgeGrade=info['knowledge'],
+                                   managementGrade=info['management'], judgmentGrade=info['judgment'],
+                                   communicationGrade=info['communication'],
+                                   organisationGrade=info['timing'], overallGrade=info['overall'],
+                                   goodPart=info['good-part'], developPart=info['develop-part'],
+                                   agreedPart=info['agreed-part'], traineeSatisfaction=info['trainee-satisfaction'],
+                                   assessorSatisfaction=info['assessor-satisfaction'],
+                                   assessTimeTaken=info['assessment-time'], feedbackTimeTaken=info['feedback-time'])
+            f.save()
+            a.finishTime = datetime.now()
+            a.isHandled = True
+            a.rater = self.request.user.id
+            a.formId = f.id
+            a.save()
+        else:
+            raise LogicError("You haven't log in")
 
 
 class CreateCBD(APIView):
@@ -355,7 +382,35 @@ class CreateCBD(APIView):
             raise LogicError("You haven't log in")
 
     def post(self):
-        pass
+        if self.request.user.is_authenticated():
+            info = self.input
+            self.check_input('id')
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            a = Apply.objects.get(id=self.input['id'])
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            f = CBD.objects.create(assessTime=datetime.now(), hospital=info['hospital'],
+                                   isReflective=info['reflected'], isRelated=info['related'],
+                                   trainee=a.trainee, rater=self.request.user.id, experience=info['experience'],
+                                   clinicalSetting=info['setting'], clinicalOther=info['setting-other'],
+                                   clinicalSummary=info['summary'], clinicalFocus=info['focus'],
+                                   complexity=info['complexity'], recordGrade=info['record'],
+                                   assessmentGrade=info['assessment'], knowledgeGrade=info['knowledge'],
+                                   managementGrade=info['management'], judgmentGrade=info['judgment'],
+                                   communicationGrade=info['communication'], reflectiveGrade=info['reflective'],
+                                   leadershipGrade=info['leadership'], overallGrade=info['overall'],
+                                   goodPart=info['good-part'], developPart=info['develop-part'],
+                                   agreedPart=info['agreed-part'], traineeSatisfaction=info['trainee-satisfaction'],
+                                   assessorSatisfaction=info['assessor-satisfaction'],
+                                   assessTimeTaken=info['assessment-time'], feedbackTimeTaken=info['feedback-time'])
+            f.save()
+            a.finishTime = datetime.now()
+            a.isHandled = True
+            a.rater = self.request.user.id
+            a.formId = f.id
+            a.save()
+        else:
+            raise LogicError("You haven't log in")
 
 
 class PATForm(APIView):
@@ -376,7 +431,7 @@ class PATForm(APIView):
                 'assessTime': f.assessTime.timestamp(),
                 'hospital': f.hospital,
                 'occupation': f.occupation,
-                'trainee': f.trainee,
+                'trainee': t.name,
                 'trainee_license': t.license,
                 'year': t.grade,
                 'environment': f.environment,
@@ -431,7 +486,7 @@ class OOTForm(APIView):
                 'hospital': f.hospital,
                 'rater': r.name,
                 'rater_license': r.license,
-                'trainee': f.trainee,
+                'trainee': t.name,
                 'trainee_license': t.license,
                 'year': t.grade,
                 'experience': f.experience,
@@ -483,7 +538,7 @@ class DOPSForm(APIView):
                 'hospital': f.hospital,
                 'rater': r.name,
                 'rater_license': r.license,
-                'trainee': f.trainee,
+                'trainee': t.name,
                 'trainee_license': t.license,
                 'year': t.grade,
                 'experience': f.experience,
@@ -536,9 +591,9 @@ class CEXForm(APIView):
                 'user_status': u.authority,
                 'assessTime': f.assessTime.timestamp(),
                 'hospital': f.hospital,
-                'rater': f.rater,
+                'rater': r.name,
                 'rater_license': r.license,
-                'trainee': f.trainee,
+                'trainee': t.name,
                 'trainee_license': t.license,
                 'year': t.grade,
                 'experience': f.experience,
@@ -586,17 +641,18 @@ class CBDForm(APIView):
                 raise LogicError("You have no access to it")
             result = {
                 'user_status': u.authority,
-                'isReflected': f.isReflected,
+                'isReflected': f.isReflective,
                 'isRelated': f.isRelated,
                 'assessTime': f.assessTime.timestamp(),
                 'hospital': f.hospital,
-                'rater': f.rater,
+                'rater': r.name,
                 'rater_license': r.license,
-                'trainee': f.trainee,
+                'trainee': t.name,
                 'trainee_license': t.license,
                 'year': t.grade,
                 'experience': f.experience,
                 'clinicalSetting': f.clinicalSetting,
+                'clinicalOther': f.clinicalOther,
                 'clinicalSummary': f.clinicalSummary,
                 'clinicalFocus': f.clinicalFocus,
                 'complexity': f.complexity,

@@ -121,6 +121,7 @@ class CBD(models.Model):
     trainee = models.IntegerField(default=-1)
     experience = models.IntegerField(default=0)
     clinicalSetting = models.IntegerField(default=-1)  # 1 for ward 2 for clinic 3 for others
+    clinicalOther = models.CharField(null=True, max_length=20)
     clinicalSummary = models.TextField(max_length=200)
     clinicalFocus = models.CharField(max_length=20)
     complexity = models.IntegerField(default=-1)  # 1 for low 2 for medium 3 for high
