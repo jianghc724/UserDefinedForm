@@ -37,7 +37,6 @@ function getTimeStr(dt) {
 }
 
 function getTime(time) {
-    console.log(time);
     var result = getChsFullDate(time) + ' ' + getChsDay(time) + ' ' + getTimeStr(time);
     return result;
 }

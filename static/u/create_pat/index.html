@@ -77,7 +77,7 @@
         </div>
 
         <div class="panel panel-default">
-            <form class="form-horizontal" role="form" method="post" action="/api/u/create/dops" id="question-form">
+            <form class="form-horizontal" role="form" method="post" action="/api/u/create/pat" id="question-form">
                 <div class="section-group">
                     <label for="input-name" class="col-sm-12">1. About the assessment 关于评估</label>
                     <div class="form-group" class="question">
@@ -576,7 +576,7 @@
         $('.form-control').on('focus', function() {var me = $(this); setTimeout(function(){me.select();}, 100)});
         api.form($('#question-form'), function (id) {
             // success
-            locals.form_base.id = id;
+            locals.form.id = id;
         }, function (errno, errmsg, e) {
             // fail
             locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
@@ -620,11 +620,10 @@
         });
     });
     var save= function () {
-        var data = [];
+        var data = {};
         var flag = false;
         var e_flag = true;
         var form = $('#question-form');
-        console.log(form);
         $.each(form.serializeArray(), function (i, input) {
             if (flag) {
                 return;
@@ -635,16 +634,12 @@
                 return;
             }
             data[input.name] = input.value;
-            if (input.name == 'experience') {
-                e_flag = false;
-            }
         });
-        if (e_flag){
-            alert("请完成量表的每一项");
+        if (flag) {
             return;
         }
+        data['id'] = urlParam.id;
         data.status = 1;
-        console.log(data);
         if (!locals.form) {
             locals.form = {};
         } else {

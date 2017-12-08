@@ -72,6 +72,7 @@
                     <th>编号</th>
                     <th>申请人</th>
                     <th>申请模板</th>
+                    <th>申请时间</th>
                     <th>评分人</th>
                     <th>评分时间</th>
                     <th>操作</th>
@@ -87,16 +88,19 @@
                         {{ form.trainee }}
                     </td>
                     <td class="td-type">
-                        {{ getType(form.type) }}
+                        {{ getUpperName(form.form_base) }}
+                    </td>
+                    <td class="td-apply-time">
+                        {{ getTime(form.apply_time) }}
                     </td>
                     <td class="td-rater">
                         {{ form.rater }}
                     </td>
-                    <td class="td-time">
-                        {{ getTime(form.time) }}
+                    <td class="td-finish-time">
+                        {{ getTime(form.finish_time) }}
                     </td>
                     <td class="td-operations">
-                        <a href="/u/{{ getUrlName(form.id, form.type) }}" target="_blank">
+                        <a href="/u/{{ getLowerName(form.form_base) }}?id={{ form.form_id }}" target="_blank">
                             <span class="glyphicon glyphicon-check">查看模板</span>
                         </a>
                     </td>
@@ -139,10 +143,11 @@
         render();
         loginRequired(function () {
             api.get('/api/u/form/list', {}, function (data) {
-                $.each(data['form'], function (i, form) {
-                    updateDate(form, 'time');
+                $.each(data['apply'], function (i, form) {
+                    updateDate(form, 'apply_time');
+                    updateDate(form, 'finish_time');
                 });
-                locals.forms = data['form'];
+                locals.forms = data['apply'];
                 locals.user_status = data['user_status'];
                 render();
             }, dftFail);

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        #content {
+            padding-top: 80px;
+        }
+    </style>
+    <link href="/3rd/bs/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/css/finish_apply.css" />
+
+    <title>量表填写</title>
+</head>
+<body>
+    <header class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-targetid=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" style="cursor:default" id="nav-title"></a>
+            </div>
+
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav" id="nav-li"></ul>
+                <ul class="nav navbar-nav navbar-right" id="nav-li-right"></ul>
+            </div>
+        </div>
+    </header>
+
+    <div id="content"></div>
+
+    <footer class="bs-footer" role="contentinfo">
+        <hr>
+        <div class="container" id="footer" style="text-align: center"></div>
+    </footer>
+
+<script type="text/template" id="tpl-nav-title">
+外科医师临床操作能力观察评估记录系统
+</script>
+
+<script type="text/template" id="tpl-nav-li">
+    <li class="active"><a class="btn-link" href="/u/apply_list">申请列表</a></li>
+    <li class="active"><a class="btn-link" href="/u/form_list">量表列表</a></li>
+    {% if user_status == 1 %}
+        <li class="active"><a class="btn-link" href="/u/create_user">创建填表人员</a></li>
+    {% else %}
+        {% if user_status == 2 %}
+            <li class="active"><a class="btn-link" href="/u/create_user">创建学员</a></li>
+        {% endif %}
+    {% endif %}
+</script>
+
+<script type="text/template" id="tpl-nav-li-right">
+    <li><a href="javascript:;" onclick="logout()" >登出</a></li>
+</script>
+
+<script type="text/template" id="tpl-content">
+    <div class="container" xmlns="http://www.w3.org/1999/html">
+        <div class="pageheader">
+            <h1 class="lead">(OOT)Observation of Teaching 教学观察</h1>
+        </div>
+
+        <div class="panel panel-default">
+            <form class="form-horizontal" role="form" id="question-form">
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">1. About the assessment 关于评估</label>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Hospital 医院</label>
+                        <div class="col-sm-8">
+                            {% if form.hospital == 1 %}
+                                华信医院
+                            {% endif %}
+                            {% if form.hospital == 2 %}
+                                清华大学医学中心
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Rater/Assessor 评估者</label>
+                        <div class="col-sm-8">
+                            {{ form.rater }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">License No.执照编号</label>
+                        <div class="col-sm-8">
+                            {{ form.rater_license }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Rater has received training for this type of assessment? 评估者是否训练过使用此评估工具？</label>
+                        <div class="col-sm-8">
+                            <input type="checkbox" name="experience" autofocus value="1">None 无
+                            <input type="checkbox" name="experience" autofocus value="2">Written 书面形式
+                            <input type="checkbox" name="experience" autofocus value="4">Web/CD/DVD
+                            <input type="checkbox" name="experience" autofocus value="8">Workshop 研讨会
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Trainee 受训人</label>
+                        <div class="col-sm-8">
+                            {{ form.trainee }}
+                        </div>
+                    </div><div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">License No.执照编号</label>
+                        <div class="col-sm-8">
+                            {{ form.trainee_license }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Year of Resident:</label>
+                        <div class="col-sm-8">
+                            {{ form.year }}
+                        </div>
+                    </div>
+                </div>
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">2. Institution Setting 机构设置:</label>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">学习形式</label>
+                        <div class="col-sm-8">
+                            {% if form.groupType == 1 %}
+                                Lecture
+                            {% endif %}
+                            {% if form.groupType == 2 %}
+                                Seminar
+                            {% endif %}
+                            {% if form.groupType == 3 %}
+                                Teaching Ward Round
+                            {% endif %}
+                            {% if form.groupType == 4 %}
+                                Other 另一个：{{ form.groupOther }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Learners Group 学习小组</label>
+                        <div class="col-sm-8">
+                            {{ form.groupName }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Number of Learners 学习者数目</label>
+                        <div class="col-sm-8">
+                            {% if form.groupNumber == 5 %}
+                                大于等于5
+                            {% else %}
+                                {{ form.groupNumber }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Title of session 会议题目</label>
+                        <div class="col-sm-8">
+                            {{ form.groupTitle }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Brief Description of session. 会议简要说明</label>
+                        <div class="col-sm-8">
+                            {{ form.groupIntro }}
+                        </div>
+                    </div>
+                </div>
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">3. Performance Level (select the appropriate level) 成绩等级</label>
+                    <div class="form-group col-sm-offset-1 col-sm-11" class="question">
+                        <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th class="col-sm-3"></th>
+                            <th class="col-sm-1">Not observed </br> 未观察到</th>
+                            <th class="col-sm-2">Level 2 </br> Appropriate for completion of Resident training </br> 达到住院医师培训结业水平</th>
+                            <th class="col-sm-2">Level 1 </br> Appropriate for year of training </br> 达到住院医师培训基本水平</th>
+                            <th class="col-sm-2">Level 0 </br> Below that expected for year of training </br> 低于住院医生培训基本培训的预期水平</th>
+                            <th class="col-sm-2">Comments </br> 评价</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr id="1">
+                            <td class="td-description">
+                                1. Introduction 介绍 </br> • Introduction of self 自我介绍 </br> • Gained attention of group 受到小组关注 </br> • Shared the objective 共享目标
+                            </td>
+                            <td class="td-not-observed">
+                                {% if form.intro == 0 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-outstanding">
+                                {% if form.intro == 1 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-satisfactory">
+                                {% if form.intro == 2 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-development-required">
+                                {% if form.intro == 3 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-comments">
+                                {{ form.introComment }}
+                            </td>
+                        </tr>
+                        <tr id="2">
+                            <td class="td-description">
+                                2. Presentation 陈述 </br> • Key points emphasized 强调的重点 </br> • Clear, concise delivery 表达清晰、简洁 </br> • Knowledge of subject 知识主题 </br> • Logical sequence 逻辑顺序 </br> • Well paced 节奏适中 </br> • Good use of voice/tone 语音语调 </br> • Resources supported topic 使用材料支持主题 </br> • Quality of resources 所用材料的质量 </br> • Effective group participation 有效参与小组 </br> • Effective use of questioning 有效使用问答形式 </br> • Appropriate teaching methods used 教学方法使用得当
+                            </td>
+                            <td class="td-not-observed">
+                                {% if form.present == 0 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-outstanding">
+                                {% if form.present == 1 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-satisfactory">
+                                {% if form.present == 2 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-development-required">
+                                {% if form.present == 3 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-comments">
+                                {{ form.presentComment }}
+                            </td>
+                        </tr>
+                        <tr id="3">
+                            <td class="td-description">
+                                3. Conclusion 结论 </br> • Summarised key points 重点总结 </br> • Objectives were met 达到目标 </br> • Kept to time limit 遵守时间限制
+                            </td>
+                            <td class="td-not-observed">
+                                {% if form.conclude == 0 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-outstanding">
+                                {% if form.conclude == 1 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-satisfactory">
+                                {% if form.conclude == 2 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-development-required">
+                                {% if form.conclude == 3 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-comments">
+                                {{ form.concludeComment }}
+                            </td>
+                        </tr>
+                        <tr id="4">
+                            <td class="td-description">
+                                Overall Performance Level 综合成绩等级
+                            </td>
+                            <td class="td-not-observed">
+                                {% if form.overall == 0 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-outstanding">
+                                {% if form.overall == 1 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-satisfactory">
+                                {% if form.overall == 2 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-development-required">
+                                {% if form.overall == 3 %}
+                                    &radic;
+                                {% endif %}
+                            </td>
+                            <td class="td-comments">
+
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">4. FEEDBACK 反馈</label>
+                    <label for="input-name" class="col-sm-12">Verbal feedback is a mandatory part of this assessment. Please use this space to record areas of strength and suggestions for development which were highlighted during discussion with the trainee: 口头反馈是此评估必不可少的组成部分。请记录与受训人讨论时提到的发展的优势领域及建议</label>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">What aspects were done well? 哪部分完成的好？</label>
+                        <div class="col-sm-8">
+                            {{ form.goodPart }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Areas for development:需要发展的部分：</label>
+                        <div class="col-sm-8">
+                            {{ form.developPart }}
+                        </div>
+                    </div>
+                    <div class="form-group" class="question">
+                        <label for="input-name" class="col-sm-4">Agreed action 已达到标准的部分</label>
+                        <div class="col-sm-8">
+                            {{ form.agreedPart }}
+                        </div>
+                    </div>
+                </div>
+                <div class="section-group">
+                    <label for="input-name" class="col-sm-12">5. Saving and Validating this assessment 保存并校验此评估</label>
+                    <label for="input-name" class="col-sm-12">Your satisfaction rating is about how useful you found the tool as a method of assessing performance on that occasion (this is not about satisfaction with how the trainee has performed) 您的满意评级是关于您认为此评估作为评定工具用于评估时是否有用（这不是对学员完成的如何的满意度）</label>
+                    <div class="form-group col-sm-offset-1 col-sm-11" class="question">
+                        <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th class="col-sm-2">Trainee Satisfaction 受训者满意度</th>
+                            <th class="col-sm-2">Assessor Satisfaction 评估者满意度</th>
+                            <th class="col-sm-2">Time taken for assessment 评估时间</th>
+                            <th class="col-sm-2">Time taken for feedback 反馈时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="td-trainee-satisfaction">
+                                <div>{{ form.traineeSatisfaction }}/10</div>
+                            </td>
+                            <td class="td-assessor-satisfaction">
+                                <div>{{ form.assessorSatisfaction }}/10</div>
+                            </td>
+                            <td class="td-assessment-time">
+                                <div>{{ form.assessTimeTaken }}分钟</div>
+                            </td>
+                            <td class="td-feedback-time">
+                                <div>{{ form.feedbackTimeTaken }}分钟</div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="tpl-footer">
+
+</script>
+
+<script src="/3rd/jquery.js"></script>
+<script src="/3rd/bs/js/bootstrap.min.js"></script>
+<script src="/3rd/swig.js"></script>
+<script src="/js/base.js"></script>
+<script src="/js/base_admin.js"></script>
+
+<script>
+    var locals = {
+        status: -1,
+        apply_id: urlParam.id,
+        now: new Date(),
+        processResult: '',
+        user_status: -1,
+        form: []
+    };
+    var renderTemplate = function (name) {
+        $('#' + name).html(swig.render($('#tpl-' + name).html(), {locals: locals}));
+    };
+    var render = function () {
+        renderTemplate('nav-title');
+        renderTemplate('nav-li');
+        renderTemplate('nav-li-right');
+        renderTemplate('content');
+        renderTemplate('footer');
+    };
+    $(function () {
+        swig.setDefaultTZOffset(new Date().getTimezoneOffset());
+        render();
+        loginRequired(function () {
+            api.get('/api/u/oot', {id: urlParam.id}, function (data) {
+                locals.status = -1;
+                data.id = parseInt(urlParam.id);
+                locals.user_status = data['user_status'];
+                locals.form = data;
+                render();
+            }, dftFail);
+        });
+    });
+
+</script>
+</body>
+</html>

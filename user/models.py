@@ -44,7 +44,6 @@ class OOT(models.Model):
     concludeGrade = models.IntegerField(default=-1)
     concludeComment = models.TextField(null=True, max_length=200)
     overallGrade = models.IntegerField(default=-1)
-    overallComment = models.TextField(null=True, max_length=200)
     goodPart = models.IntegerField(default=0)
     developPart = models.IntegerField(default=0)
     agreedPart = models.IntegerField(default=0)

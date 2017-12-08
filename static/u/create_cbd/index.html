@@ -361,7 +361,7 @@
                     <div class="form-group" class="question">
                         <label for="input-name" class="col-sm-4">Agreed action 已达到标准的部分</label>
                         <div class="col-sm-8">
-                            <input type="text" maxlength="50" name="agreed-action" class="form-control" id="input-agreed-action" autofocus  required>
+                            <input type="text" maxlength="50" name="agreed-part" class="form-control" id="input-agreed-part" autofocus  required>
                         </div>
                     </div>
                 </div>
@@ -501,11 +501,10 @@
         });
     });
     var save= function () {
-        var data = [];
+        var data = {};
         var flag = false;
         var e_flag = true;
         var form = $('#question-form');
-        console.log(form);
         $.each(form.serializeArray(), function (i, input) {
             if (flag) {
                 return;
@@ -522,10 +521,14 @@
                 e_flag = false;
             }
         });
+        if (flag) {
+            return;
+        }
         if (e_flag){
             alert("请完成量表的每一项");
             return;
         }
+        data['id'] = urlParam.id;
         data.status = 1;
         console.log(data);
         if (!locals.form) {

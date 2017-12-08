@@ -205,16 +205,16 @@
                                 2. Obtains consent, after explaining procedure & possible comps.解释过程及并发症后取得同意
                             </td>
                             <td class="td-not-observed">
-                                <input type="radio" name="explain" autofocus value="0" checked>
+                                <input type="radio" name="explanation" autofocus value="0" checked>
                             </td>
                             <td class="td-outstanding">
-                                <input type="radio" name="explain" autofocus value="1">
+                                <input type="radio" name="explanation" autofocus value="1">
                             </td>
                             <td class="td-satisfactory">
-                                <input type="radio" name="explain" autofocus value="2">
+                                <input type="radio" name="explanation" autofocus value="2">
                             </td>
                             <td class="td-development-required">
-                                <input type="radio" name="explain" autofocus value="3">
+                                <input type="radio" name="explanation" autofocus value="3">
                             </td>
                         </tr>
                         <tr id="3">
@@ -435,7 +435,7 @@
                     <div class="form-group" class="question">
                         <label for="input-name" class="col-sm-4">Agreed action 已达到标准的部分</label>
                         <div class="col-sm-8">
-                            <input type="text" maxlength="50" name="agreed-action" class="form-control" id="input-agreed-action" autofocus  required>
+                            <input type="text" maxlength="50" name="agreed-part" class="form-control" id="input-agreed-part" autofocus  required>
                         </div>
                     </div>
                 </div>
@@ -575,11 +575,10 @@
         });
     });
     var save= function () {
-        var data = [];
+        var data = {};
         var flag = false;
         var e_flag = true;
         var form = $('#question-form');
-        console.log(form);
         $.each(form.serializeArray(), function (i, input) {
             if (flag) {
                 return;
@@ -594,10 +593,14 @@
                 e_flag = false;
             }
         });
+        if (flag) {
+            return;
+        }
         if (e_flag){
             alert("请完成量表的每一项");
             return;
         }
+        data['id'] = urlParam.id;
         data.status = 1;
         console.log(data);
         if (!locals.form) {

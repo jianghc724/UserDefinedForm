@@ -90,7 +90,7 @@ class FormList(APIView):
             elif u.authority == 2:
                 _a = Apply.objects.filter(organization=u.organization, isHandled=True)
             elif u.authority == 3:
-                _a = Apply.objects.filter(organization=u.id, isHandled=True)
+                _a = Apply.objects.filter(trainee=u_id, isHandled=True)
             else:
                 raise LogicError("unknown authority")
             for a in _a:
@@ -103,7 +103,7 @@ class FormList(APIView):
                     'trainee': t_name,
                     'rater': r_name,
                     'form_base': a.formBaseId,
-                    'form_id':a.formId,
+                    'form_id': a.formId,
                 })
             result = {
                 'user_status': u.authority,
@@ -169,7 +169,37 @@ class CreatePAT(APIView):
             raise LogicError("You haven't log in")
 
     def post(self):
-        pass
+        if self.request.user.is_authenticated():
+            info = self.input
+            self.check_input('id')
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            a = Apply.objects.get(id=self.input['id'])
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            f = PAT.objects.create(assessTime=datetime.now(), hospital=info['hospital'],
+                                   occupation=info['occupation'], trainee=a.trainee, rater=self.request.user.id,
+                                   environment=info['environment'], experience=info['experience'],
+                                   historyGrade=info['history'], knowledgeGrade=info['knowledge'],
+                                   formulaGrade=info['formula'], technicalGrade=info['technical'],
+                                   recordGrade=info['record'], timingGrade=info['timing'],
+                                   decisionGrade=info['decision'], awarenessGrade=info['awareness'],
+                                   leadershipGrade=info['leadership'], patientGrade=info['patient'],
+                                   feedbackGrade=info['feedback'], teachingGrade=info['teaching'],
+                                   patientCommunicationGrade=info['patientCommunication'],
+                                   selfCommunicationGrade=info['selfCommunication'],
+                                   involvementGrade=info['involvement'], reliabilityGrade=info['reliability'],
+                                   overallGrade=info['overall'], goodPart=info['good-part'],
+                                   developPart=info['develop-part'], probityPart=info['probity'],
+                                   assessorSatisfaction=info['assessor-satisfaction'],
+                                   assessTimeTaken=info['assessment-time'])
+            f.save()
+            a.finishTime = datetime.now()
+            a.isHandled = True
+            a.rater = self.request.user.id
+            a.formId = f.id
+            a.save()
+        else:
+            raise LogicError("You haven't log in")
 
 
 class CreateOOT(APIView):
@@ -194,7 +224,34 @@ class CreateOOT(APIView):
             raise LogicError("You haven't log in")
 
     def post(self):
-        pass
+        if self.request.user.is_authenticated():
+            info = self.input
+            self.check_input('id')
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            a = Apply.objects.get(id=self.input['id'])
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            f = OOT.objects.create(assessTime=datetime.now(), hospital=info['hospital'],
+                                   trainee=a.trainee, rater=self.request.user.id, experience=info['experience'],
+                                   groupType=info['setting'], groupOther=info['setting-other'],
+                                   groupName=info['group-name'], groupNumber=info['number'],
+                                   groupTitle=info['group-title'], groupIntro=info['group-description'],
+                                   introGrade=info['intro'], introComment=info['intro-comment'],
+                                   presentGrade=info['present'], presentComment=info['present-comment'],
+                                   concludeGrade=info['conclude'], concludeComment=info['conclude-comment'],
+                                   overallGrade=info['overall'], goodPart=info['good-part'],
+                                   developPart=info['develop-part'], agreedPart=info['agreed-part'],
+                                   traineeSatisfaction=info['trainee-satisfaction'],
+                                   assessorSatisfaction=info['assessor-satisfaction'],
+                                   assessTimeTaken=info['assessment-time'], feedbackTimeTaken=info['feedback-time'])
+            f.save()
+            a.finishTime = datetime.now()
+            a.isHandled = True
+            a.rater = self.request.user.id
+            a.formId = f.id
+            a.save()
+        else:
+            raise LogicError("You haven't log in")
 
 
 class CreateDOPS(APIView):
@@ -219,7 +276,36 @@ class CreateDOPS(APIView):
             raise LogicError("You haven't log in")
 
     def post(self):
-        pass
+        if self.request.user.is_authenticated():
+            info = self.input
+            self.check_input('id')
+            u = UserInfo.objects.get(user_id=self.request.user.id)
+            a = Apply.objects.get(id=self.input['id'])
+            if u.authority == 3:
+                raise LogicError("You have no authority")
+            f = DOPS.objects.create(assessTime=datetime.now(), hospital=info['hospital'],
+                                    trainee=a.trainee, rater=self.request.user.id, experience=info['experience'],
+                                    clinicalSetting=info['setting'], procedureName=info['procedure'],
+                                    observeName=info['part'], procedureTime=info['times'],
+                                    complexity=info['complexity'], descriptionGrade=info['description'],
+                                    explanationGrade=info['explanation'], preparationGrade=info['preparation'],
+                                    sedationGrade=info['sedation'], safetyGrade=info['safety'],
+                                    performanceGrade=info['performance'], emergencyGrade=info['emergency'],
+                                    documentationGrade=info['documentation'],
+                                    communicationGrade=info['communication'],
+                                    demonstrationGrade=info['demonstration'], overallGrade=info['overall'],
+                                    goodPart=info['good-part'], developPart=info['develop-part'],
+                                    agreedPart=info['agreed-part'], traineeSatisfaction=info['trainee-satisfaction'],
+                                    assessorSatisfaction=info['assessor-satisfaction'],
+                                    assessTimeTaken=info['assessment-time'], feedbackTimeTaken=info['feedback-time'])
+            f.save()
+            a.finishTime = datetime.now()
+            a.isHandled = True
+            a.rater = self.request.user.id
+            a.formId = f.id
+            a.save()
+        else:
+            raise LogicError("You haven't log in")
 
 
 class CreateCEX(APIView):
@@ -287,7 +373,7 @@ class PATForm(APIView):
                 raise LogicError("You have no access to it")
             result = {
                 'user_status': u.authority,
-                'assessTime': f.assessTime,
+                'assessTime': f.assessTime.timestamp(),
                 'hospital': f.hospital,
                 'occupation': f.occupation,
                 'trainee': f.trainee,
@@ -295,23 +381,23 @@ class PATForm(APIView):
                 'year': t.grade,
                 'environment': f.environment,
                 'experience': f.experience,
-                'historyGrade': f.historyGrade,
-                'knowledgeGrade': f.knowledgeGrade,
-                'formulaGrade': f.formulaGrade,
-                'technicalGrade': f.technicalGrade,
-                'recordGrade': f.recordGrade,
-                'timingGrade': f.timingGrade,
-                'decisionGrade': f.decisionGrade,
-                'awarenessGrade': f.awarenessGrade,
-                'leadershipGrade': f.leadershipGrade,
-                'patientGrade': f.patientGrade,
-                'feedbackGrade': f.feedbackGrade,
-                'teachingGrade': f.teachingGrade,
-                'patientCommunicationGrade': f.patientCommunicationGrade,
-                'selfCommunicationGrade': f.selfCommunicationGrade,
-                'involvementGrade': f.involvementGrade,
-                'reliabilityGrade': f.reliabilityGrade,
-                'overallGrade': f.overallGrade,
+                'history': f.historyGrade,
+                'knowledge': f.knowledgeGrade,
+                'formula': f.formulaGrade,
+                'technical': f.technicalGrade,
+                'record': f.recordGrade,
+                'timing': f.timingGrade,
+                'decision': f.decisionGrade,
+                'awareness': f.awarenessGrade,
+                'leadership': f.leadershipGrade,
+                'patient': f.patientGrade,
+                'feedback': f.feedbackGrade,
+                'teaching': f.teachingGrade,
+                'patientCommunication': f.patientCommunicationGrade,
+                'selfCommunication': f.selfCommunicationGrade,
+                'involvement': f.involvementGrade,
+                'reliability': f.reliabilityGrade,
+                'overall': f.overallGrade,
                 'goodPart': f.goodPart,
                 'developPart': f.developPart,
                 'probityPart': f.probityPart,
@@ -341,9 +427,9 @@ class OOTForm(APIView):
                 raise LogicError("You have no access to it")
             result = {
                 'user_status': u.authority,
-                'assessTime': f.assessTime,
+                'assessTime': f.assessTime.timestamp(),
                 'hospital': f.hospital,
-                'rater': f.rater,
+                'rater': r.name,
                 'rater_license': r.license,
                 'trainee': f.trainee,
                 'trainee_license': t.license,
@@ -355,14 +441,13 @@ class OOTForm(APIView):
                 'groupNumber': f.groupNumber,
                 'groupTitle': f.groupTitle,
                 'groupIntro': f.groupIntro,
-                'introGrade': f.introGrade,
+                'intro': f.introGrade,
                 'introComment': f.introComment,
-                'presentGrade': f.presentGrade,
+                'present': f.presentGrade,
                 'presentComment': f.presentComment,
-                'concludeGrade': f.concludeGrade,
+                'conclude': f.concludeGrade,
                 'concludeComment': f.concludeComment,
-                'overallGrade': f.overallGrade,
-                'overallComment': f.overallComment,
+                'overall': f.overallGrade,
                 'goodPart': f.goodPart,
                 'developPart': f.developPart,
                 'agreedPart': f.agreedPart,
@@ -394,9 +479,9 @@ class DOPSForm(APIView):
                 raise LogicError("You have no access to it")
             result = {
                 'user_status': u.authority,
-                'assessTime': f.assessTime,
+                'assessTime': f.assessTime.timestamp(),
                 'hospital': f.hospital,
-                'rater': f.rater,
+                'rater': r.name,
                 'rater_license': r.license,
                 'trainee': f.trainee,
                 'trainee_license': t.license,
@@ -407,17 +492,17 @@ class DOPSForm(APIView):
                 'observeName': f.observeName,
                 'procedureTime': f.procedureTime,
                 'complexity': f.complexity,
-                'descriptionGrade': f.descriptionGrade,
-                'explanationGrade': f.explanationGrade,
-                'preparationGrade': f.preparationGrade,
-                'sedationGrade': f.sedationGrade,
-                'safetyGrade': f.safetyGrade,
-                'performanceGrade': f.performanceGrade,
-                'emergencyGrade': f.emergencyGrade,
-                'documentationGrade': f.documentationGrade,
-                'communicationGrade': f.communicationGrade,
-                'demonstrationGrade': f.demonstrationGrade,
-                'overallGrade': f.overallGrade,
+                'description': f.descriptionGrade,
+                'explanation': f.explanationGrade,
+                'preparation': f.preparationGrade,
+                'sedation': f.sedationGrade,
+                'safety': f.safetyGrade,
+                'performance': f.performanceGrade,
+                'emergency': f.emergencyGrade,
+                'documentation': f.documentationGrade,
+                'communication': f.communicationGrade,
+                'demonstration': f.demonstrationGrade,
+                'overall': f.overallGrade,
                 'goodPart': f.goodPart,
                 'developPart': f.developPart,
                 'agreedPart': f.agreedPart,
@@ -449,7 +534,7 @@ class CEXForm(APIView):
                 raise LogicError("You have no access to it")
             result = {
                 'user_status': u.authority,
-                'assessTime': f.assessTime,
+                'assessTime': f.assessTime.timestamp(),
                 'hospital': f.hospital,
                 'rater': f.rater,
                 'rater_license': r.license,
@@ -462,14 +547,14 @@ class CEXForm(APIView):
                 'clinicalSummary': f.clinicalSummary,
                 'clinicalFocus': f.clinicalFocus,
                 'complexity': f.complexity,
-                'historyGrade': f.historyGrade,
-                'examGrade': f.examGrade,
-                'knowledgeGrade': f.knowledgeGrade,
-                'managementGrade': f.managementGrade,
-                'judgmentGrade': f.judgmentGrade,
-                'communicationGrade': f.communicationGrade,
-                'organisationGrade': f.organisationGrade,
-                'overallGrade': f.overallGrade,
+                'history': f.historyGrade,
+                'exam': f.examGrade,
+                'knowledge': f.knowledgeGrade,
+                'management': f.managementGrade,
+                'judgment': f.judgmentGrade,
+                'communication': f.communicationGrade,
+                'organisation': f.organisationGrade,
+                'overall': f.overallGrade,
                 'goodPart': f.goodPart,
                 'developPart': f.developPart,
                 'agreedPart': f.agreedPart,
@@ -503,7 +588,7 @@ class CBDForm(APIView):
                 'user_status': u.authority,
                 'isReflected': f.isReflected,
                 'isRelated': f.isRelated,
-                'assessTime': f.assessTime,
+                'assessTime': f.assessTime.timestamp(),
                 'hospital': f.hospital,
                 'rater': f.rater,
                 'rater_license': r.license,
@@ -515,15 +600,15 @@ class CBDForm(APIView):
                 'clinicalSummary': f.clinicalSummary,
                 'clinicalFocus': f.clinicalFocus,
                 'complexity': f.complexity,
-                'recordGrade': f.recordGrade,
-                'assessmentGrade': f.assessmentGrade,
-                'knowledgeGrade': f.knowledgeGrade,
-                'managementGrade': f.managementGrade,
-                'judgmentGrade': f.judgmentGrade,
-                'communicationGrade': f.communicationGrade,
-                'leadershipGrade': f.leadershipGrade,
-                'reflectiveGrade': f.reflectiveGrade,
-                'overallGrade': f.overallGrade,
+                'record': f.recordGrade,
+                'assessment': f.assessmentGrade,
+                'knowledge': f.knowledgeGrade,
+                'management': f.managementGrade,
+                'judgment': f.judgmentGrade,
+                'communication': f.communicationGrade,
+                'leadership': f.leadershipGrade,
+                'reflective': f.reflectiveGrade,
+                'overall': f.overallGrade,
                 'goodPart': f.goodPart,
                 'developPart': f.developPart,
                 'agreedPart': f.agreedPart,

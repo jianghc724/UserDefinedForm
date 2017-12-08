@@ -147,11 +147,11 @@
                     <div class="form-group" class="question">
                         <label for="input-name" class="col-sm-4">Number of Learners 学习者数目</label>
                         <div class="col-sm-8">
-                            <input type="radio" name="times" autofocus value="1" checked>1
-                            <input type="radio" name="times" autofocus value="2">2
-                            <input type="radio" name="times" autofocus value="3">3
-                            <input type="radio" name="times" autofocus value="4">4
-                            <input type="radio" name="times" autofocus value="5">大于等于5
+                            <input type="radio" name="number" autofocus value="1" checked>1
+                            <input type="radio" name="number" autofocus value="2">2
+                            <input type="radio" name="number" autofocus value="3">3
+                            <input type="radio" name="number" autofocus value="4">4
+                            <input type="radio" name="number" autofocus value="5">大于等于5
                         </div>
                     </div>
                     <div class="form-group" class="question">
@@ -187,19 +187,19 @@
                                 1. Introduction 介绍 </br> • Introduction of self 自我介绍 </br> • Gained attention of group 受到小组关注 </br> • Shared the objective 共享目标
                             </td>
                             <td class="td-not-observed">
-                                <input type="radio" name="introduction" autofocus value="0" checked>
+                                <input type="radio" name="intro" autofocus value="0" checked>
                             </td>
                             <td class="td-outstanding">
-                                <input type="radio" name="introduction" autofocus value="1">
+                                <input type="radio" name="intro" autofocus value="1">
                             </td>
                             <td class="td-satisfactory">
-                                <input type="radio" name="introduction" autofocus value="2">
+                                <input type="radio" name="intro" autofocus value="2">
                             </td>
                             <td class="td-development-required">
-                                <input type="radio" name="introduction" autofocus value="3">
+                                <input type="radio" name="intro" autofocus value="3">
                             </td>
                             <td class="td-comments">
-                                <input type="text" maxlength="50" name="introduction" class="form-control" id="input-introduction" autofocus  required>
+                                <input type="text" maxlength="50" name="intro-comment" class="form-control" id="input-introduction" autofocus  required>
                             </td>
                         </tr>
                         <tr id="2">
@@ -207,19 +207,19 @@
                                 2. Presentation 陈述 </br> • Key points emphasized 强调的重点 </br> • Clear, concise delivery 表达清晰、简洁 </br> • Knowledge of subject 知识主题 </br> • Logical sequence 逻辑顺序 </br> • Well paced 节奏适中 </br> • Good use of voice/tone 语音语调 </br> • Resources supported topic 使用材料支持主题 </br> • Quality of resources 所用材料的质量 </br> • Effective group participation 有效参与小组 </br> • Effective use of questioning 有效使用问答形式 </br> • Appropriate teaching methods used 教学方法使用得当
                             </td>
                             <td class="td-not-observed">
-                                <input type="radio" name="presentation" autofocus value="0" checked>
+                                <input type="radio" name="present" autofocus value="0" checked>
                             </td>
                             <td class="td-outstanding">
-                                <input type="radio" name="presentation" autofocus value="1">
+                                <input type="radio" name="present" autofocus value="1">
                             </td>
                             <td class="td-satisfactory">
-                                <input type="radio" name="presentation" autofocus value="2">
+                                <input type="radio" name="present" autofocus value="2">
                             </td>
                             <td class="td-development-required">
-                                <input type="radio" name="presentation" autofocus value="3">
+                                <input type="radio" name="present" autofocus value="3">
                             </td>
                             <td class="td-comments">
-                                <input type="text" maxlength="50" name="presentation" class="form-control" id="input-presentation" autofocus  required>
+                                <input type="text" maxlength="50" name="present-comment" class="form-control" id="input-presentation" autofocus  required>
                             </td>
                         </tr>
                         <tr id="3">
@@ -227,19 +227,19 @@
                                 3. Conclusion 结论 </br> • Summarised key points 重点总结 </br> • Objectives were met 达到目标 </br> • Kept to time limit 遵守时间限制
                             </td>
                             <td class="td-not-observed">
-                                <input type="radio" name="conclusion" autofocus value="0" checked>
+                                <input type="radio" name="conclude" autofocus value="0" checked>
                             </td>
                             <td class="td-outstanding">
-                                <input type="radio" name="conclusion" autofocus value="1">
+                                <input type="radio" name="conclude" autofocus value="1">
                             </td>
                             <td class="td-satisfactory">
-                                <input type="radio" name="conclusion" autofocus value="2">
+                                <input type="radio" name="conclude" autofocus value="2">
                             </td>
                             <td class="td-development-required">
-                                <input type="radio" name="conclusion" autofocus value="3">
+                                <input type="radio" name="conclude" autofocus value="3">
                             </td>
                             <td class="td-comments">
-                                <input type="text" maxlength="50" name="conclusion" class="form-control" id="input-conclusion" autofocus  required>
+                                <input type="text" maxlength="50" name="conclude-comment" class="form-control" id="input-conclusion" autofocus  required>
                             </td>
                         </tr>
                         <tr id="4">
@@ -284,7 +284,7 @@
                     <div class="form-group" class="question">
                         <label for="input-name" class="col-sm-4">Agreed action 已达到标准的部分</label>
                         <div class="col-sm-8">
-                            <input type="text" maxlength="50" name="agreed-action" class="form-control" id="input-agreed-action" autofocus  required>
+                            <input type="text" maxlength="50" name="agreed-part" class="form-control" id="input-agreed-part" autofocus  required>
                         </div>
                     </div>
                 </div>
@@ -378,7 +378,7 @@
         $('.form-control').on('focus', function() {var me = $(this); setTimeout(function(){me.select();}, 100)});
         api.form($('#question-form'), function (id) {
             // success
-            locals.form_base.id = id;
+            locals.form.id = id;
         }, function (errno, errmsg, e) {
             // fail
             locals.processResult = '失败: [' + errno + '] ' + errmsg + (e ? ": " + e : "");
@@ -424,29 +424,34 @@
         });
     });
     var save= function () {
-        var data = [];
+        var data = {};
         var flag = false;
         var e_flag = true;
         var form = $('#question-form');
-        console.log(form);
         $.each(form.serializeArray(), function (i, input) {
             if (flag) {
                 return;
             }
-            if (input.value == ''){
-                alert("请完成量表的每一项");
-                flag = true;
-                return;
+            if (input.value == '') {
+                if (input.name != 'setting-other'){
+                    alert("请完成量表的每一项");
+                    flag = true;
+                    return;
+                }
             }
             data[input.name] = input.value;
             if (input.name == 'experience') {
                 e_flag = false;
             }
         });
+        if (flag) {
+            return;
+        }
         if (e_flag){
             alert("请完成量表的每一项");
             return;
         }
+        data['id'] = urlParam.id;
         data.status = 1;
         console.log(data);
         if (!locals.form) {
